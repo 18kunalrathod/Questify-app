@@ -43,7 +43,7 @@ dependencies:
   flutter_animate: ^4.5.2
 
   # Local storage (for onboarding flags, theme prefs etc. — lightweight, not the full DB yet)
-  shared_preferences: ^2.3.3
+  # shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:
@@ -97,3 +97,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+dependency_overrides:
+  path_provider_android: 2.3.1
