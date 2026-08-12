@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// All fixed design tokens (backgrounds, text, cards) that never change
-/// regardless of which accent color the user picks.
+/// Fixed design tokens — canvas, card, and text colors that stay the
+/// same regardless of which accent color the user picks.
 class AppColors {
   // ---------- DARK MODE ----------
-  static const Color darkCanvas = Color(0xFF0A0B0F);
-  static const Color darkCard = Color(0xFF15171C);
-  static const Color darkTextPrimary = Color(0xFFF4F5F7);
-  static const Color darkTextMuted = Color(0xFF6E7280);
+  static const Color darkCanvas = Color(0xFF12110D);
+  static const Color darkCard = Color(0xFF1B1913);
+  static const Color darkTextPrimary = Color(0xFFF3F1EA);
+  static const Color darkTextMuted = Color(0xFF8A8578);
 
   // ---------- LIGHT MODE ----------
-  static const Color lightCanvas = Color(0xFFF8F9FC);
+  static const Color lightCanvas = Color(0xFFFBF8F2);
   static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightTextPrimary = Color(0xFF0F172A);
-  static const Color lightTextMuted = Color(0xFF64748B);
+  static const Color lightCardBorder = Color(0xFFEDE6D6);
+  static const Color lightTextPrimary = Color(0xFF2B2620);
+  static const Color lightTextMuted = Color(0xFFA39A85);
 }
 
-/// User-selectable accent colors. Each has a dark-mode and light-mode
-/// variant so the accent still looks right regardless of theme.
+/// User-selectable accent color. Each has a dark-mode and light-mode
+/// variant so the same accent choice looks correct in both themes.
 enum AccentColor {
-  gold(darkValue: Color(0xFFFFD400), lightValue: Color(0xFFFFAB00), label: 'Gold'),
-  lime(darkValue: Color(0xFF00FF66), lightValue: Color(0xFF00C853), label: 'Lime'),
-  cyan(darkValue: Color(0xFF00E5FF), lightValue: Color(0xFF00B0FF), label: 'Cyan'),
-  violet(darkValue: Color(0xFF8A2BE2), lightValue: Color(0xFF7C4DFF), label: 'Violet');
+  gold(darkValue: Color(0xFFE8B84B), lightValue: Color(0xFFC8912E), label: 'Gold');
 
   final Color darkValue;
   final Color lightValue;
@@ -72,12 +70,13 @@ class AppTheme {
         bodyColor: AppColors.lightTextPrimary,
         displayColor: AppColors.lightTextPrimary,
       ),
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.lightCard,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.lightCardBorder, width: 1),
         ),
       ),
     );

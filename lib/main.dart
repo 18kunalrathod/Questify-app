@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'features/splash/presentation/screen.dart';
 
-/// Holds the currently selected accent color. Later this will load/save
-/// from shared_preferences so the choice persists between app launches.
+/// Holds the currently selected accent color.
+/// Defaults to gold — our one locked accent for now.
 final accentColorProvider = StateProvider<AccentColor>((ref) => AccentColor.gold);
 
-/// Holds the current theme mode (system/light/dark).
+/// Holds the current theme mode (light/dark/system).
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
 
 void main() {
@@ -27,13 +28,11 @@ class QuestifyApp extends ConsumerWidget {
       themeMode: themeMode,
       theme: AppTheme.lightTheme(accent),
       darkTheme: AppTheme.darkTheme(accent),
-      home: const _TempHomePlaceholder(),
+      home: const SplashScreen(),
     );
   }
 }
 
-/// Temporary placeholder screen — will be replaced by the real
-/// Splash Screen in the next step.
 class _TempHomePlaceholder extends StatelessWidget {
   const _TempHomePlaceholder();
 
