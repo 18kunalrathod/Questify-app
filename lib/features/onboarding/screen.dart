@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../dashboard/presentation/dashboard_placeholder.dart';
 import '../../shared/widgets/fade_through_route.dart';
+import 'package:questify/features/auth/screen.dart';
 
 class OnboardingSlide {
   final IconData icon;
@@ -51,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _finishOnboarding() {
    Navigator.of(context).pushReplacement(
-  FadeThroughRoute(page: const DashboardPlaceholder()),
+  FadeThroughRoute(page: const AuthScreen()),
 );
   }
 
