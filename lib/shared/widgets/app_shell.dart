@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/quests/presentation/quest_board_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -13,9 +15,9 @@ class _AppShellState extends State<AppShell> {
 
   final _tabs = const [
     DashboardScreen(),
-    _PlaceholderTab(label: 'Quest Board'),
+    QuestBoardScreen(),
     _PlaceholderTab(label: 'Focus Mode'),
-    _PlaceholderTab(label: 'Profile'),
+    ProfileScreen(),
   ];
 
   @override
