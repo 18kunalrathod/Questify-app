@@ -82,3 +82,40 @@ class AppTheme {
     );
   }
 }
+
+/// Reusable text styles for the "signature" typography system:
+/// Fraunces for headlines/hero moments, IBM Plex Mono for stat numbers.
+class AppTextStyles {
+  static TextStyle headline(BuildContext context, {double size = 20, FontWeight weight = FontWeight.w600}) {
+    return GoogleFonts.fraunces(
+      fontSize: size,
+      fontWeight: weight,
+      letterSpacing: -0.3,
+      color: Theme.of(context).textTheme.bodyLarge?.color,
+    );
+  }
+
+  static TextStyle stat(BuildContext context, {double size = 22, FontWeight weight = FontWeight.w600, Color? color}) {
+    return GoogleFonts.ibmPlexMono(
+      fontSize: size,
+      fontWeight: weight,
+      color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
+    );
+  }
+}
+
+/// The specular-highlight border used on every card — subtly brighter at
+/// the top-left, fading toward the bottom-right, simulating a soft light
+/// source. This is what gives flat cards a sense of physical depth.
+BoxDecoration specularCardDecoration(BuildContext context) {
+  return BoxDecoration(
+    color: Theme.of(context).cardTheme.color,
+    borderRadius: BorderRadius.circular(16),
+    border: Border(
+      top: BorderSide(color: Colors.white.withOpacity(0.14)),
+      left: BorderSide(color: Colors.white.withOpacity(0.08)),
+      right: BorderSide(color: Colors.white.withOpacity(0.02)),
+      bottom: BorderSide(color: Colors.white.withOpacity(0.02)),
+    ),
+  );
+}

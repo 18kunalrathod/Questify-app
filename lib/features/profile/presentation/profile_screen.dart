@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/fade_through_route.dart';
 import '../../achievements/presentation/achievements_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 
 enum AttributeTrend { up, down, flat }
 
@@ -93,6 +94,13 @@ class ProfileScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
           children: [
+            Align(
+    alignment: Alignment.topRight,
+    child: IconButton(
+      onPressed: () => Navigator.of(context).push(FadeThroughRoute(page: const SettingsScreen())),
+      icon: Icon(Icons.settings_outlined, color: mutedColor, size: 22),
+    ),
+  ),
             // Avatar + name
             Center(
               child: Column(
