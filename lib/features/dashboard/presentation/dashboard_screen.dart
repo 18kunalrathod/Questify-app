@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../tools/presentation/tools_hub_screen.dart';
+import '../../calendar/presentation/calendar_screen.dart';
+import '../../notes/presentation/notes_screen.dart';
+import '../../analytics/presentation/analytics_screen.dart';
 
 class _Quest {
   final String title;
@@ -35,11 +39,27 @@ class DashboardScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           children: [
-            Text('Tuesday, Aug 12', style: TextStyle(color: mutedColor, fontSize: 12)),
-            const SizedBox(height: 4),
-            Text(
-              'Good evening, Kunal',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Tuesday, Aug 12', style: TextStyle(color: mutedColor, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Good evening, Kunal',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ToolsHubScreen())),
+                  icon: Icon(Icons.grid_view_rounded, color: accent, size: 20),
+                  style: IconButton.styleFrom(backgroundColor: cardColor),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
@@ -85,6 +105,91 @@ class DashboardScreen extends StatelessWidget {
                 Expanded(child: _StatCard(label: 'day streak', value: '12', cardColor: cardColor)),
                 const SizedBox(width: 10),
                 Expanded(child: _StatCard(label: 'focus time', value: '2.5h', cardColor: cardColor)),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Analytics preview
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AnalyticsScreen())),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('WEEKLY OVERVIEW', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 0.5)),
+                        Text('See all ›', style: TextStyle(color: accent, fontSize: 10)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 40,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [0.35, 0.6, 0.45, 1.0, 0.55, 0.3, 0.15].map((barHeight) {
+                          return Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              height: 40 * barHeight,
+                              decoration: BoxDecoration(
+                                color: accent.withOpacity(0.3 + (barHeight * 0.5)),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Calendar + Vault previews, side by side
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CalendarScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.calendar_today_outlined, size: 16, color: accent),
+                          const SizedBox(height: 10),
+                          const Text('3 events today', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotesScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.menu_book_outlined, size: 16, color: accent),
+                          const SizedBox(height: 10),
+                          const Text('12 notes', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
 
