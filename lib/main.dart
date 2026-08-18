@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/screen.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 /// Holds the currently selected accent color.
 /// Defaults to gold — our one locked accent for now.
@@ -22,14 +23,16 @@ class QuestifyApp extends ConsumerWidget {
     final accent = ref.watch(accentColorProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp(
-      title: 'Questify',
-      debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
-      theme: AppTheme.lightTheme(accent),
-      darkTheme: AppTheme.darkTheme(accent),
-      home: const SplashScreen(),
-    );
+  return MaterialApp(
+  title: 'Questify',
+  debugShowCheckedModeBanner: false,
+  themeMode: themeMode,
+  theme: AppTheme.lightTheme(accent),
+  darkTheme: AppTheme.darkTheme(accent),
+  localizationsDelegates: quill.FlutterQuillLocalizations.localizationsDelegates,
+  supportedLocales: quill.FlutterQuillLocalizations.supportedLocales,
+  home: const SplashScreen(),
+);
   }
 }
 
