@@ -1,16 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/ambient_glow_background.dart';
 
 enum SessionType { focus, breakTime, rest }
-
-extension SessionTypeX on SessionType {
-  String get label => switch (this) {
-        SessionType.focus => 'Focus',
-        SessionType.breakTime => 'Break',
-        SessionType.rest => 'Rest',
-      };
-}
 
 class AmbientSound {
   final String label;
@@ -25,7 +19,6 @@ const _ambientSounds = [
   AmbientSound(label: 'White Noise', icon: Icons.graphic_eq),
 ];
 
-// Preset durations (minutes) each session type cycles through on tap.
 const _focusPresets = [15, 25, 45, 60];
 const _breakPresets = [5, 10, 15];
 const _restPresets = [15, 30, 45];
@@ -94,9 +87,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
   }
 
   void _cyclePreset(SessionType type) {
-    // Don't let session length change while the timer is actively running.
     if (_isRunning) return;
-
     setState(() {
       switch (type) {
         case SessionType.focus:
@@ -128,121 +119,115 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
     final progress = _totalDuration.inSeconds == 0 ? 0.0 : _remaining.inSeconds / _totalDuration.inSeconds;
 
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          children: [
-            Text('Deep Work Sanctum', style: TextStyle(color: mutedColor, fontSize: 11, letterSpacing: 0.5)),
-            const SizedBox(height: 2),
-            Text('Flutter deep work', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+      body: AmbientGlowBackground(
+        strong: true,
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            children: [
+              Text('DEEP WORK SANCTUM', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1.5)),
+              const SizedBox(height: 4),
+              Text('Flutter deep work', style: AppTextStyles.headline(context, size: 20)),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // Circular timer
-            SizedBox(
-              height: 240,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AnimatedBuilder(
-                    animation: _rotateController,
-                    builder: (context, child) => Transform.rotate(angle: _rotateController.value * 2 * math.pi, child: child),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: accent.withOpacity(0.15), width: 1)),
+              SizedBox(
+                height: 240,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _rotateController,
+                      builder: (context, child) => Transform.rotate(angle: _rotateController.value * 2 * math.pi, child: child),
+                      child: Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: accent.withOpacity(0.15), width: 1)),
+                      ),
                     ),
-                  ),
-                  CustomPaint(
-                    size: const Size(190, 190),
-                    painter: _ProgressRingPainter(progress: progress, color: accent, trackColor: Colors.white.withOpacity(0.06)),
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('FOCUS', style: TextStyle(color: mutedColor, fontSize: 11, letterSpacing: 2)),
-                      const SizedBox(height: 6),
-                      Text(_formattedTime, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w700, letterSpacing: -1)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 28),
-
-            // Controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _CircleControlButton(icon: Icons.replay, onTap: _resetTimer, cardColor: cardColor, mutedColor: mutedColor),
-                const SizedBox(width: 18),
-                _CircleControlButton(
-                  icon: _isRunning ? Icons.pause : Icons.play_arrow,
-                  onTap: _toggleTimer,
-                  isPrimary: true,
-                  accent: accent,
+                    CustomPaint(
+                      size: const Size(190, 190),
+                      painter: _ProgressRingPainter(progress: progress, color: accent, trackColor: Colors.white.withOpacity(0.06)),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('FOCUS', style: TextStyle(color: mutedColor, fontSize: 11, letterSpacing: 2)),
+                        const SizedBox(height: 6),
+                        Text(_formattedTime, style: AppTextStyles.stat(context, size: 40)),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 18),
-                _CircleControlButton(icon: Icons.check, onTap: () {}, cardColor: cardColor, mutedColor: mutedColor),
-              ],
-            ),
+              ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
-            // Session settings
-            Text('SESSION SETTINGS', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1)),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              child: Column(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _SettingRow(label: 'Focus', value: '$_focusMinutes min', onTap: () => _cyclePreset(SessionType.focus), showDivider: true),
-                  _SettingRow(label: 'Break', value: '$_breakMinutes min', onTap: () => _cyclePreset(SessionType.breakTime), showDivider: true),
-                  _SettingRow(label: 'Rest', value: '$_restMinutes min', onTap: () => _cyclePreset(SessionType.rest), showDivider: false),
+                  _CircleControlButton(icon: Icons.replay, onTap: _resetTimer, cardColor: cardColor, mutedColor: mutedColor),
+                  const SizedBox(width: 18),
+                  _CircleControlButton(icon: _isRunning ? Icons.pause : Icons.play_arrow, onTap: _toggleTimer, isPrimary: true, accent: accent),
+                  const SizedBox(width: 18),
+                  _CircleControlButton(icon: Icons.check, onTap: () {}, cardColor: cardColor, mutedColor: mutedColor),
                 ],
               ),
-            ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-            // Ambient sounds
-            Text('AMBIENT SOUND', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1)),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 76,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _ambientSounds.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (context, index) {
-                  final sound = _ambientSounds[index];
-                  final isSelected = _selectedSound == sound.label;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedSound = sound.label),
-                    child: Container(
-                      width: 68,
-                      decoration: BoxDecoration(
-                        color: isSelected ? accent.withOpacity(0.12) : cardColor,
-                        border: Border.all(color: isSelected ? accent : Colors.transparent, width: 1.5),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(sound.icon, size: 18, color: isSelected ? accent : mutedColor),
-                          const SizedBox(height: 6),
-                          Text(sound.label, style: TextStyle(fontSize: 8, color: isSelected ? accent : mutedColor), textAlign: TextAlign.center),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              Text('SESSION SETTINGS', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  children: [
+                    _SettingRow(label: 'Focus', value: '$_focusMinutes min', onTap: () => _cyclePreset(SessionType.focus), showDivider: true),
+                    _SettingRow(label: 'Break', value: '$_breakMinutes min', onTap: () => _cyclePreset(SessionType.breakTime), showDivider: true),
+                    _SettingRow(label: 'Rest', value: '$_restMinutes min', onTap: () => _cyclePreset(SessionType.rest), showDivider: false),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              Text('AMBIENT SOUND', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1)),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 76,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _ambientSounds.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final sound = _ambientSounds[index];
+                    final isSelected = _selectedSound == sound.label;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedSound = sound.label),
+                      child: Container(
+                        width: 68,
+                        decoration: BoxDecoration(
+                          color: isSelected ? accent.withOpacity(0.12) : cardColor,
+                          border: Border.all(color: isSelected ? accent : Colors.transparent, width: 1.5),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(sound.icon, size: 18, color: isSelected ? accent : mutedColor),
+                            const SizedBox(height: 6),
+                            Text(sound.label, style: TextStyle(fontSize: 8, color: isSelected ? accent : mutedColor), textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -307,10 +292,7 @@ class _CircleControlButton extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isPrimary ? accent : cardColor,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: isPrimary ? accent : cardColor),
         child: Icon(icon, size: isPrimary ? 28 : 20, color: isPrimary ? Colors.black.withOpacity(0.8) : mutedColor),
       ),
     );
@@ -332,9 +314,7 @@ class _SettingRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 13),
-        decoration: BoxDecoration(
-          border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null,
-        ),
+        decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
