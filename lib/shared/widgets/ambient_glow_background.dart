@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
-/// Wraps a screen's content with a soft radial glow near the top,
-/// using the app's current accent color. This is the app-wide
-/// "signature" background treatment — applied once here, reused
-/// on every screen instead of duplicated per-screen.
 class AmbientGlowBackground extends StatelessWidget {
   final Widget child;
+  final bool strong;
 
-  const AmbientGlowBackground({super.key, required this.child});
+  const AmbientGlowBackground({
+    super.key,
+    required this.child,
+    this.strong = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,30 +17,29 @@ class AmbientGlowBackground extends StatelessWidget {
 
     return Stack(
       children: [
-        // The glow itself — sits behind everything, ignores touches.
         Positioned(
-          top: -80,
+          top: -90,
           left: 0,
           right: 0,
           child: IgnorePointer(
             child: Container(
-              height: 260,
+              height: strong ? 280 : 220,
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   center: Alignment.center,
                   radius: 0.9,
                   colors: [
-                    accent.withOpacity(0.16),
-                    accent.withOpacity(0.04),
+                    AppColors.glowCore.withOpacity(strong ? 0.38 : 0.16),
+                    accent.withOpacity(strong ? 0.15 : 0.06),
+                    accent.withOpacity(0.03),
                     Colors.transparent,
                   ],
-                  stops: const [0.0, 0.45, 0.75],
+                  stops: const [0.0, 0.4, 0.65, 0.8],
                 ),
               ),
             ),
           ),
         ),
-        // The actual screen content, on top of the glow.
         child,
       ],
     );

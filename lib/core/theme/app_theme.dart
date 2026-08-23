@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Fixed design tokens — canvas, card, and text colors that stay the
-/// same regardless of which accent color the user picks.
 class AppColors {
   // ---------- DARK MODE ----------
-  static const Color darkCanvas = Color(0xFF12110D);
-  static const Color darkCard = Color(0xFF1B1913);
+  static const Color darkCanvas = Color(0xFF000000);
+  static const Color darkCard = Color(0xFF0D0C0A);
   static const Color darkTextPrimary = Color(0xFFF3F1EA);
   static const Color darkTextMuted = Color(0xFF8A8578);
+  static const Color glowCore = Color(0xFFFFA640);
 
   // ---------- LIGHT MODE ----------
   static const Color lightCanvas = Color(0xFFFBF8F2);
@@ -18,8 +17,6 @@ class AppColors {
   static const Color lightTextMuted = Color(0xFFA39A85);
 }
 
-/// User-selectable accent color. Each has a dark-mode and light-mode
-/// variant so the same accent choice looks correct in both themes.
 enum AccentColor {
   gold(darkValue: Color(0xFFE8B84B), lightValue: Color(0xFFC8912E), label: 'Gold');
 
@@ -52,7 +49,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
     );
@@ -75,7 +72,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.lightCardBorder, width: 1),
         ),
       ),
@@ -83,11 +80,9 @@ class AppTheme {
   }
 }
 
-/// Reusable text styles for the "signature" typography system:
-/// Fraunces for headlines/hero moments, IBM Plex Mono for stat numbers.
 class AppTextStyles {
-  static TextStyle headline(BuildContext context, {double size = 20, FontWeight weight = FontWeight.w600}) {
-    return GoogleFonts.fraunces(
+  static TextStyle headline(BuildContext context, {double size = 20, FontWeight weight = FontWeight.w700}) {
+    return GoogleFonts.playfairDisplay(
       fontSize: size,
       fontWeight: weight,
       letterSpacing: -0.3,
@@ -104,9 +99,6 @@ class AppTextStyles {
   }
 }
 
-/// The specular-highlight border used on every card — subtly brighter at
-/// the top-left, fading toward the bottom-right, simulating a soft light
-/// source. This is what gives flat cards a sense of physical depth.
 BoxDecoration specularCardDecoration(BuildContext context) {
   return BoxDecoration(
     color: Theme.of(context).cardTheme.color,
