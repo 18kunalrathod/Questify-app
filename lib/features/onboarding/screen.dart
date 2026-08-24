@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../dashboard/presentation/dashboard_placeholder.dart';
 import '../../shared/widgets/fade_through_route.dart';
 import 'package:questify/features/auth/screen.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/ambient_glow_background.dart';
 
 class OnboardingSlide {
   final IconData icon;
@@ -73,9 +75,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isLastPage = _currentPage == _slides.length - 1;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
+      body: AmbientGlowBackground(
+        strong: true,
+        child: SafeArea(
+          child: Column(
+            children: [
             // Skip button, top-right
             Align(
               alignment: Alignment.topRight,
@@ -120,9 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           slide.title,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: AppTextStyles.headline(context, size: 22),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -184,6 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             const SizedBox(height: 24),
           ],
+          ),
         ),
       ),
     );

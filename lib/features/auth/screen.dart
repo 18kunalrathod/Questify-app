@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../shared/widgets/fade_through_route.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../../core/theme/app_theme.dart';
 
 enum AuthMode { login, signup }
 
@@ -131,17 +132,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   Positioned(
                     bottom: 24,
                     child: Text.rich(
-                      TextSpan(
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
-                            ),
-                        children: [
-                          TextSpan(text: 'Q', style: TextStyle(color: accent)),
-                          const TextSpan(text: 'uestify'),
-                        ],
-                      ),
-                    ),
+   TextSpan(
+    style: AppTextStyles.headline(context, size: 20),
+    children: [
+      TextSpan(text: 'Q', style: TextStyle(color: accent)),
+      const TextSpan(text: 'uestify'),
+    ],
+  ),
+),
                   ),
                 ],
               ),
@@ -169,12 +167,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            isLogin ? 'Welcome back' : 'Create your account',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
+                         Text(
+  isLogin ? 'Welcome back' : 'Create your account',
+  style: AppTextStyles.headline(context, size: 22),
+),
                           const SizedBox(height: 6),
                           Text(
                             isLogin

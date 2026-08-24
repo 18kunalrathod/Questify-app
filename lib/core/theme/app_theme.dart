@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   // ---------- DARK MODE ----------
   static const Color darkCanvas = Color(0xFF000000);
-  static const Color darkCard = Color(0xFF0D0C0A);
+  static const Color darkCard = Color(0xFF1A1712);
   static const Color darkTextPrimary = Color(0xFFF3F1EA);
   static const Color darkTextMuted = Color(0xFF8A8578);
   static const Color glowCore = Color(0xFFFFA640);
@@ -44,14 +44,15 @@ class AppTheme {
         bodyColor: AppColors.darkTextPrimary,
         displayColor: AppColors.darkTextPrimary,
       ),
-      cardTheme: const CardThemeData(
-        color: AppColors.darkCard,
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-      ),
+cardTheme: CardThemeData(
+  color: AppColors.darkCard,
+  elevation: 0,
+  margin: EdgeInsets.zero,
+  shape: RoundedRectangleBorder(
+    borderRadius: const BorderRadius.all(Radius.circular(16)),
+    side: BorderSide(color: Colors.white.withOpacity(0.05)),
+  ),
+),
     );
   }
 

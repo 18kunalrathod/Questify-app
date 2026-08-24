@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../main.dart' show themeModeProvider;
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/ambient_glow_background.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -13,74 +15,72 @@ class SettingsScreen extends ConsumerWidget {
     final isDarkMode = themeMode == ThemeMode.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _SectionLabel('APPEARANCE', mutedColor),
-            Container(
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _SwitchRow(
-                    label: 'Dark mode',
-                    value: isDarkMode,
-                    onChanged: (value) {
-                      ref.read(themeModeProvider.notifier).state = value ? ThemeMode.dark : ThemeMode.light;
-                    },
-                    showDivider: true,
-                  ),
-                  _NavRow(label: 'Accent color', trailing: 'Gold', onTap: () {}, showDivider: false),
-                ],
+      appBar: AppBar(title: Text('Settings', style: AppTextStyles.headline(context, size: 18))),
+      body: AmbientGlowBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              _SectionLabel('APPEARANCE', mutedColor),
+              Container(
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _SwitchRow(
+                      label: 'Dark mode',
+                      value: isDarkMode,
+                      onChanged: (value) => ref.read(themeModeProvider.notifier).state = value ? ThemeMode.dark : ThemeMode.light,
+                      showDivider: true,
+                    ),
+                    _NavRow(label: 'Accent color', trailing: 'Gold', onTap: () {}, showDivider: false),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            _SectionLabel('NOTIFICATIONS', mutedColor),
-            Container(
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _SwitchRow(label: 'Daily quest reminders', value: true, onChanged: (_) {}, showDivider: true),
-                  _SwitchRow(label: 'Streak warnings', value: true, onChanged: (_) {}, showDivider: false),
-                ],
+              const SizedBox(height: 20),
+              _SectionLabel('NOTIFICATIONS', mutedColor),
+              Container(
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _SwitchRow(label: 'Daily quest reminders', value: true, onChanged: (_) {}, showDivider: true),
+                    _SwitchRow(label: 'Streak warnings', value: true, onChanged: (_) {}, showDivider: false),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            _SectionLabel('DATA', mutedColor),
-            Container(
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _NavRow(label: 'Export my data', onTap: () {}, showDivider: true),
-                  _NavRow(label: 'Sync now', onTap: () {}, showDivider: false),
-                ],
+              const SizedBox(height: 20),
+              _SectionLabel('DATA', mutedColor),
+              Container(
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _NavRow(label: 'Export my data', onTap: () {}, showDivider: true),
+                    _NavRow(label: 'Sync now', onTap: () {}, showDivider: false),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            _SectionLabel('ACCOUNT', mutedColor),
-            Container(
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _NavRow(label: 'Change password', onTap: () {}, showDivider: true),
-                  _NavRow(label: 'Sign out', onTap: () {}, isDestructive: true, showDivider: false),
-                ],
+              const SizedBox(height: 20),
+              _SectionLabel('ACCOUNT', mutedColor),
+              Container(
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _NavRow(label: 'Change password', onTap: () {}, showDivider: true),
+                    _NavRow(label: 'Sign out', onTap: () {}, isDestructive: true, showDivider: false),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 24),
-            Center(
-              child: Text('Questify v1.0.0', style: TextStyle(color: mutedColor, fontSize: 11)),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Center(child: Text('Questify v1.0.0', style: TextStyle(color: mutedColor, fontSize: 11))),
+            ],
+          ),
         ),
       ),
     );
@@ -114,9 +114,7 @@ class _SwitchRow extends StatelessWidget {
     final accent = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null,
-      ),
+      decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -135,13 +133,7 @@ class _NavRow extends StatelessWidget {
   final bool showDivider;
   final bool isDestructive;
 
-  const _NavRow({
-    required this.label,
-    this.trailing,
-    required this.onTap,
-    required this.showDivider,
-    this.isDestructive = false,
-  });
+  const _NavRow({required this.label, this.trailing, required this.onTap, required this.showDivider, this.isDestructive = false});
 
   @override
   Widget build(BuildContext context) {
@@ -150,9 +142,7 @@ class _NavRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 13),
-        decoration: BoxDecoration(
-          border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null,
-        ),
+        decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

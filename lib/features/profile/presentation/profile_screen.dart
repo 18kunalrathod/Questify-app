@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/fade_through_route.dart';
+import '../../../shared/widgets/ambient_glow_background.dart';
+import '../../../shared/widgets/app_icons.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../achievements/presentation/achievements_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 
@@ -7,7 +10,7 @@ enum AttributeTrend { up, down, flat }
 
 class Attribute {
   final String label;
-  final IconData icon;
+  final AppIcon icon;
   final int score;
   final AttributeTrend trend;
 
@@ -20,16 +23,16 @@ class Attribute {
 }
 
 const _attributes = [
-  Attribute(label: 'Wisdom', icon: Icons.psychology_outlined, score: 65, trend: AttributeTrend.up),
-  Attribute(label: 'Strength', icon: Icons.fitness_center, score: 58, trend: AttributeTrend.up),
-  Attribute(label: 'Discipline', icon: Icons.track_changes_outlined, score: 72, trend: AttributeTrend.up),
-  Attribute(label: 'Balance', icon: Icons.favorite_outline, score: 44, trend: AttributeTrend.down),
-  Attribute(label: 'Consistency', icon: Icons.local_fire_department_outlined, score: 60, trend: AttributeTrend.flat),
+  Attribute(label: 'Wisdom', icon: AppIcon.document, score: 65, trend: AttributeTrend.up),
+  Attribute(label: 'Strength', icon: AppIcon.streak, score: 58, trend: AttributeTrend.up),
+  Attribute(label: 'Discipline', icon: AppIcon.focus, score: 72, trend: AttributeTrend.up),
+  Attribute(label: 'Balance', icon: AppIcon.checklist, score: 44, trend: AttributeTrend.down),
+  Attribute(label: 'Consistency', icon: AppIcon.quest, score: 60, trend: AttributeTrend.flat),
 ];
 
 class CompletedQuest {
   final String title;
-  final IconData icon;
+  final AppIcon icon;
   final int xp;
   final String whenLabel;
 
@@ -42,15 +45,13 @@ class CompletedQuest {
 }
 
 const _recentCompletions = [
-  CompletedQuest(title: 'Morning workout', icon: Icons.fitness_center, xp: 50, whenLabel: 'Today'),
-  CompletedQuest(title: '4 gym sessions this week', icon: Icons.fitness_center, xp: 150, whenLabel: 'Today'),
-  CompletedQuest(title: 'Flutter deep work', icon: Icons.rocket_launch_outlined, xp: 80, whenLabel: 'Yesterday'),
-  CompletedQuest(title: 'Read 20 pages', icon: Icons.menu_book_outlined, xp: 30, whenLabel: '2 days ago'),
-  CompletedQuest(title: 'Evening walk', icon: Icons.self_improvement, xp: 20, whenLabel: '3 days ago'),
+  CompletedQuest(title: 'Morning workout', icon: AppIcon.streak, xp: 50, whenLabel: 'Today'),
+  CompletedQuest(title: '4 gym sessions this week', icon: AppIcon.streak, xp: 150, whenLabel: 'Today'),
+  CompletedQuest(title: 'Flutter deep work', icon: AppIcon.quest, xp: 80, whenLabel: 'Yesterday'),
+  CompletedQuest(title: 'Read 20 pages', icon: AppIcon.document, xp: 30, whenLabel: '2 days ago'),
+  CompletedQuest(title: 'Evening walk', icon: AppIcon.checklist, xp: 20, whenLabel: '3 days ago'),
 ];
 
-/// Level tier system — badge visually gets more "premium" at higher levels,
-/// but stays within the app's single gold accent family. See LevelTier.forLevel().
 class LevelTier {
   final String name;
   final Color color;
@@ -90,178 +91,171 @@ class ProfileScreen extends StatelessWidget {
     final tier = LevelTier.forLevel(currentLevel);
 
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          children: [
-            Align(
-    alignment: Alignment.topRight,
-    child: IconButton(
-      onPressed: () => Navigator.of(context).push(FadeThroughRoute(page: const SettingsScreen())),
-      icon: Icon(Icons.settings_outlined, color: mutedColor, size: 22),
-    ),
-  ),
-            // Avatar + name
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: cardColor,
-                      border: Border.all(color: tier.color, width: tier.borderWidth),
-                      boxShadow: tier.glowOpacity > 0
-                          ? [BoxShadow(color: tier.color.withOpacity(tier.glowOpacity), blurRadius: 16, spreadRadius: 2)]
-                          : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'K',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: tier.color),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text('Kunal Rathod', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text('Joined 66 days ago', style: TextStyle(fontSize: 11, color: mutedColor)),
-                ],
+      body: AmbientGlowBackground(
+        strong: true,
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).push(FadeThroughRoute(page: const SettingsScreen())),
+                  icon: Icon(Icons.settings_outlined, color: mutedColor, size: 22),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-
-            // Level card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(18)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: tier.color.withOpacity(0.12),
-                          border: Border.all(color: tier.color.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '$currentLevel',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tier.color),
-                        ),
+              Center(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cardColor,
+                        border: Border.all(color: tier.color, width: tier.borderWidth),
+                        boxShadow: tier.glowOpacity > 0
+                            ? [BoxShadow(color: tier.color.withOpacity(tier.glowOpacity), blurRadius: 16, spreadRadius: 2)]
+                            : null,
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(tier.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(99),
-                            child: SizedBox(
-                              width: 90,
-                              child: LinearProgressIndicator(
-                                value: 0.49,
-                                minHeight: 5,
-                                backgroundColor: Colors.white.withOpacity(0.08),
-                                color: tier.color,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Text('2,450\n/ 5,000 XP', textAlign: TextAlign.right, style: TextStyle(fontSize: 9, color: mutedColor)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            Text('YOUR ATTRIBUTES', style: TextStyle(fontSize: 10, letterSpacing: 1, color: mutedColor)),
-            const SizedBox(height: 10),
-
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              child: Column(
-                children: _attributes.asMap().entries.map((entry) {
-                  final isLast = entry.key == _attributes.length - 1;
-                  return _AttributeRow(attribute: entry.value, showDivider: !isLast, mutedColor: mutedColor);
-                }).toList(),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            Text('RECENT COMPLETIONS', style: TextStyle(fontSize: 10, letterSpacing: 1, color: mutedColor)),
-            const SizedBox(height: 10),
-
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-              child: Column(
-                children: _recentCompletions.asMap().entries.map((entry) {
-                  final isLast = entry.key == _recentCompletions.length - 1;
-                  final quest = entry.value;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
+                      alignment: Alignment.center,
+                      child: Text('K', style: AppTextStyles.headline(context, size: 24).copyWith(color: tier.color)),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
-                          child: Icon(quest.icon, size: 15, color: mutedColor),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(quest.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 2),
-                              Text(quest.whenLabel, style: TextStyle(fontSize: 10, color: mutedColor)),
-                            ],
-                          ),
-                        ),
-                        Text('+${quest.xp} XP', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: mutedColor)),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                    const SizedBox(height: 12),
+                    Text('Kunal Rathod', style: AppTextStyles.headline(context, size: 18)),
+                    const SizedBox(height: 3),
+                    Text('Joined 66 days ago', style: TextStyle(fontSize: 11, color: mutedColor)),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () => Navigator.of(context).push(FadeThroughRoute(page: const AchievementsScreen())),
-              child: Container(
+              const SizedBox(height: 20),
+
+              Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(
+                  border: Border.all(color: tier.color.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(18),
+                  color: cardColor?.withOpacity(0.4),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.emoji_events_outlined, size: 18, color: mutedColor),
-                        const SizedBox(width: 10),
-                        const Text('Achievements', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: tier.color.withOpacity(0.12),
+                            border: Border.all(color: tier.color.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('$currentLevel', style: AppTextStyles.stat(context, size: 16, color: tier.color)),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(tier.name, style: AppTextStyles.headline(context, size: 15)),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(99),
+                              child: SizedBox(
+                                width: 90,
+                                child: LinearProgressIndicator(value: 0.49, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.08), color: tier.color),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    Icon(Icons.chevron_right, size: 18, color: mutedColor),
+                    Text('2,450\n/ 5,000 XP', textAlign: TextAlign.right, style: TextStyle(fontSize: 9, color: mutedColor)),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 20),
+              Text('YOUR ATTRIBUTES', style: TextStyle(fontSize: 10, letterSpacing: 1, color: mutedColor)),
+              const SizedBox(height: 10),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  children: _attributes.asMap().entries.map((entry) {
+                    final isLast = entry.key == _attributes.length - 1;
+                    return _AttributeRow(attribute: entry.value, showDivider: !isLast, mutedColor: mutedColor);
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              Text('RECENT COMPLETIONS', style: TextStyle(fontSize: 10, letterSpacing: 1, color: mutedColor)),
+              const SizedBox(height: 10),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  children: _recentCompletions.asMap().entries.map((entry) {
+                    final isLast = entry.key == _recentCompletions.length - 1;
+                    final quest = entry.value;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06)))),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
+                            child: Center(child: AppIconWidget(icon: quest.icon, size: 14, color: mutedColor!)),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(quest.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 2),
+                                Text(quest.whenLabel, style: TextStyle(fontSize: 10, color: mutedColor)),
+                              ],
+                            ),
+                          ),
+                          Text('+${quest.xp} XP', style: AppTextStyles.stat(context, size: 11, color: mutedColor)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(FadeThroughRoute(page: const AchievementsScreen())),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.emoji_events_outlined, size: 18, color: mutedColor),
+                          const SizedBox(width: 10),
+                          Text('Achievements', style: AppTextStyles.headline(context, size: 13)),
+                        ],
+                      ),
+                      Icon(Icons.chevron_right, size: 18, color: mutedColor),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -290,22 +284,20 @@ class _AttributeRow extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 11),
-      decoration: BoxDecoration(
-        border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null,
-      ),
+      decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Icon(attribute.icon, size: 16, color: mutedColor),
+              AppIconWidget(icon: attribute.icon, size: 15, color: mutedColor!),
               const SizedBox(width: 8),
               Text(attribute.label, style: const TextStyle(fontSize: 12)),
             ],
           ),
           Row(
             children: [
-              Text('${attribute.score}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              Text('${attribute.score}', style: AppTextStyles.stat(context, size: 13)),
               const SizedBox(width: 4),
               Icon(trendIcon, size: 12, color: trendColor),
             ],

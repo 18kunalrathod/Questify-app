@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/ambient_glow_background.dart';
 
 enum CalendarView { month, week, day }
 
@@ -50,15 +52,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   List<CalendarEvent> get _eventsForSelectedDate {
     return _events.where((e) =>
-        e.date.year == _selectedDate.year &&
-        e.date.month == _selectedDate.month &&
-        e.date.day == _selectedDate.day).toList()
+        e.date.year == _selectedDate.year && e.date.month == _selectedDate.month && e.date.day == _selectedDate.day).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
   }
 
   bool _hasEventsOn(DateTime date) {
-    return _events.any((e) =>
-        e.date.year == date.year && e.date.month == date.month && e.date.day == date.day);
+    return _events.any((e) => e.date.year == date.year && e.date.month == date.month && e.date.day == date.day);
   }
 
   List<DateTime> get _currentWeekDays {
@@ -90,9 +89,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _deleteEvent(String id) {
-    setState(() {
-      _events.removeWhere((e) => e.id == id);
-    });
+    setState(() => _events.removeWhere((e) => e.id == id));
   }
 
   Future<void> _showEventSheet({CalendarEvent? existingEvent}) async {
@@ -119,10 +116,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        isEditing ? 'Edit event' : 'New event',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                      ),
+                      Text(isEditing ? 'Edit event' : 'New event', style: AppTextStyles.headline(context, size: 17)),
                       if (isEditing)
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
@@ -147,10 +141,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white.withOpacity(0.15)),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.white.withOpacity(0.15)), borderRadius: BorderRadius.circular(10)),
                       child: Row(
                         children: [
                           const Icon(Icons.access_time, size: 18),
@@ -192,69 +183,64 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final cardColor = Theme.of(context).cardTheme.color;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendar')),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12)),
-                child: Row(
-                  children: CalendarView.values.map((view) {
-                    final isActive = _view == view;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _view = view),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isActive ? accent : Colors.transparent,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            view.name[0].toUpperCase() + view.name.substring(1),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isActive ? Theme.of(context).scaffoldBackgroundColor : mutedColor,
+      appBar: AppBar(title: Text('Calendar', style: AppTextStyles.headline(context, size: 18))),
+      body: AmbientGlowBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12)),
+                  child: Row(
+                    children: CalendarView.values.map((view) {
+                      final isActive = _view == view;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _view = view),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(color: isActive ? accent : Colors.transparent, borderRadius: BorderRadius.circular(9)),
+                            alignment: Alignment.center,
+                            child: Text(
+                              view.name[0].toUpperCase() + view.name.substring(1),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isActive ? Theme.of(context).scaffoldBackgroundColor : mutedColor),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: switch (_view) {
-                CalendarView.month => _MonthView(
-                    visibleMonth: _visibleMonth,
-                    selectedDate: _selectedDate,
-                    hasEvents: _hasEventsOn,
-                    onDaySelected: (date) => setState(() => _selectedDate = date),
-                    onMonthChanged: (date) => setState(() => _visibleMonth = date),
-                  ),
-                CalendarView.week => _WeekView(
-                    weekDays: _currentWeekDays,
-                    selectedDate: _selectedDate,
-                    hasEvents: _hasEventsOn,
-                    onDaySelected: (date) => setState(() => _selectedDate = date),
-                    events: _eventsForSelectedDate,
-                    onEventTap: (event) => _showEventSheet(existingEvent: event),
-                  ),
-                CalendarView.day => _DayView(
-                    selectedDate: _selectedDate,
-                    events: _eventsForSelectedDate,
-                    onEventTap: (event) => _showEventSheet(existingEvent: event),
-                  ),
-              },
-            ),
-          ],
+              Expanded(
+                child: switch (_view) {
+                  CalendarView.month => _MonthView(
+                      visibleMonth: _visibleMonth,
+                      selectedDate: _selectedDate,
+                      hasEvents: _hasEventsOn,
+                      onDaySelected: (date) => setState(() => _selectedDate = date),
+                      onMonthChanged: (date) => setState(() => _visibleMonth = date),
+                    ),
+                  CalendarView.week => _WeekView(
+                      weekDays: _currentWeekDays,
+                      selectedDate: _selectedDate,
+                      hasEvents: _hasEventsOn,
+                      onDaySelected: (date) => setState(() => _selectedDate = date),
+                      events: _eventsForSelectedDate,
+                      onEventTap: (event) => _showEventSheet(existingEvent: event),
+                    ),
+                  CalendarView.day => _DayView(
+                      selectedDate: _selectedDate,
+                      events: _eventsForSelectedDate,
+                      onEventTap: (event) => _showEventSheet(existingEvent: event),
+                    ),
+                },
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -281,10 +267,7 @@ class _MonthView extends StatelessWidget {
     required this.onMonthChanged,
   });
 
-  static const _monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  static const _monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   @override
   Widget build(BuildContext context) {
@@ -300,16 +283,9 @@ class _MonthView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              onPressed: () => onMonthChanged(DateTime(visibleMonth.year, visibleMonth.month - 1)),
-            ),
-            Text('${_monthNames[visibleMonth.month - 1]} ${visibleMonth.year}',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              onPressed: () => onMonthChanged(DateTime(visibleMonth.year, visibleMonth.month + 1)),
-            ),
+            IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => onMonthChanged(DateTime(visibleMonth.year, visibleMonth.month - 1))),
+            Text('${_monthNames[visibleMonth.month - 1]} ${visibleMonth.year}', style: AppTextStyles.headline(context, size: 15)),
+            IconButton(icon: const Icon(Icons.chevron_right), onPressed: () => onMonthChanged(DateTime(visibleMonth.year, visibleMonth.month + 1))),
           ],
         ),
         const SizedBox(height: 8),
@@ -328,10 +304,7 @@ class _MonthView extends StatelessWidget {
               onTap: () => onDaySelected(date),
               child: Container(
                 margin: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: isSelected ? accent : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                decoration: BoxDecoration(color: isSelected ? accent : Colors.transparent, borderRadius: BorderRadius.circular(10)),
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -392,17 +365,12 @@ class _WeekView extends StatelessWidget {
                     Container(
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(
-                        color: isSelected ? accent : Colors.transparent,
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(color: isSelected ? accent : Colors.transparent, shape: BoxShape.circle),
                       alignment: Alignment.center,
-                      child: Text('${date.day}',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Theme.of(context).scaffoldBackgroundColor : null)),
+                      child: Text('${date.day}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Theme.of(context).scaffoldBackgroundColor : null)),
                     ),
                     const SizedBox(height: 4),
-                    if (hasEvents(date))
-                      Container(width: 4, height: 4, decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
+                    if (hasEvents(date)) Container(width: 4, height: 4, decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
                   ],
                 ),
               ),
@@ -411,18 +379,9 @@ class _WeekView extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         if (events.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 30),
-            child: Center(child: Text('No events this day', style: TextStyle(color: mutedColor, fontSize: 12))),
-          )
+          Padding(padding: const EdgeInsets.only(top: 30), child: Center(child: Text('No events this day', style: TextStyle(color: mutedColor, fontSize: 12))))
         else
-          ...events.map((event) => _EventTile(
-                event: event,
-                cardColor: cardColor,
-                accent: accent,
-                mutedColor: mutedColor,
-                onTap: () => onEventTap(event),
-              )),
+          ...events.map((event) => _EventTile(event: event, cardColor: cardColor, accent: accent, mutedColor: mutedColor, onTap: () => onEventTap(event))),
       ],
     );
   }
@@ -435,9 +394,7 @@ class _DayView extends StatelessWidget {
 
   const _DayView({required this.selectedDate, required this.events, required this.onEventTap});
 
-  static const _monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  static const _monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   @override
   Widget build(BuildContext context) {
@@ -448,24 +405,12 @@ class _DayView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       children: [
-        Text(
-          '${_monthNames[selectedDate.month - 1]} ${selectedDate.day}, ${selectedDate.year}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
+        Text('${_monthNames[selectedDate.month - 1]} ${selectedDate.day}, ${selectedDate.year}', style: AppTextStyles.headline(context, size: 17)),
         const SizedBox(height: 16),
         if (events.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 30),
-            child: Center(child: Text('No events this day', style: TextStyle(color: mutedColor, fontSize: 12))),
-          )
+          Padding(padding: const EdgeInsets.only(top: 30), child: Center(child: Text('No events this day', style: TextStyle(color: mutedColor, fontSize: 12))))
         else
-          ...events.map((event) => _EventTile(
-                event: event,
-                cardColor: cardColor,
-                accent: accent,
-                mutedColor: mutedColor,
-                onTap: () => onEventTap(event),
-              )),
+          ...events.map((event) => _EventTile(event: event, cardColor: cardColor, accent: accent, mutedColor: mutedColor, onTap: () => onEventTap(event))),
       ],
     );
   }
@@ -478,13 +423,7 @@ class _EventTile extends StatelessWidget {
   final Color? mutedColor;
   final VoidCallback onTap;
 
-  const _EventTile({
-    required this.event,
-    required this.cardColor,
-    required this.accent,
-    required this.mutedColor,
-    required this.onTap,
-  });
+  const _EventTile({required this.event, required this.cardColor, required this.accent, required this.mutedColor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
