@@ -61,7 +61,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Hero: greeting in Playfair, then the bordered stat block
-              Text('Good evening, Kunal', style: AppTextStyles.headline(context, size: 15, weight: FontWeight.w600).copyWith(color: mutedColor)),
+              AppTextStyles.nameHighlight(context, prefix: 'Good evening, ', name: 'Kunal', size: 15, weight: FontWeight.w600, baseColor: mutedColor),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(18),

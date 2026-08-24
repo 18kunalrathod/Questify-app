@@ -123,7 +123,7 @@ class ProfileScreen extends StatelessWidget {
                       child: Text('K', style: AppTextStyles.headline(context, size: 24).copyWith(color: tier.color)),
                     ),
                     const SizedBox(height: 12),
-                    Text('Kunal Rathod', style: AppTextStyles.headline(context, size: 18)),
+                    AppTextStyles.nameHighlight(context, name: 'Kunal Rathod', size: 18),
                     const SizedBox(height: 3),
                     Text('Joined 66 days ago', style: TextStyle(fontSize: 11, color: mutedColor)),
                   ],

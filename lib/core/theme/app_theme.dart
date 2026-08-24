@@ -83,7 +83,7 @@ cardTheme: CardThemeData(
 
 class AppTextStyles {
   static TextStyle headline(BuildContext context, {double size = 20, FontWeight weight = FontWeight.w700}) {
-    return GoogleFonts.playfairDisplay(
+    return GoogleFonts.instrumentSans(
       fontSize: size,
       fontWeight: weight,
       letterSpacing: -0.3,
@@ -96,6 +96,32 @@ class AppTextStyles {
       fontSize: size,
       fontWeight: weight,
       color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
+    );
+  }
+
+  /// A headline where a [name]'s first letter is highlighted in the app's
+  /// accent color — e.g. "Good evening, Kunal" with the K in gold.
+  /// [prefix] is any text before the name (can be empty), styled normally.
+  static Widget nameHighlight(
+    BuildContext context, {
+    String prefix = '',
+    required String name,
+    double size = 20,
+    FontWeight weight = FontWeight.w700,
+    Color? baseColor,
+  }) {
+    final accent = Theme.of(context).colorScheme.primary;
+    final style = headline(context, size: size, weight: weight).copyWith(color: baseColor);
+
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: prefix),
+          TextSpan(text: name.substring(0, 1), style: TextStyle(color: accent)),
+          TextSpan(text: name.substring(1)),
+        ],
+      ),
     );
   }
 }
