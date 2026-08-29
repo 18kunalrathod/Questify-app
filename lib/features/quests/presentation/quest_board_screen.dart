@@ -19,9 +19,8 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
   late final TabController _tabController;
   QuestCategory? _selectedCategory;
 
- int _totalXp(WidgetRef ref) => Leveling.totalXp(
-      ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp),
-    );
+int _totalXp(WidgetRef ref) =>
+    ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
 
   @override
   void initState() {

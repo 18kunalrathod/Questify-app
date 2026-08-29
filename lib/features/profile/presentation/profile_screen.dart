@@ -90,8 +90,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
-    final liveXp = ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
-final totalXp = Leveling.totalXp(liveXp);
+final totalXp = ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
 final currentLevel = Leveling.levelForXp(totalXp);
 final xpIntoLevel = Leveling.xpIntoCurrentLevel(totalXp);
 final tier = LevelTier.forLevel(currentLevel);
