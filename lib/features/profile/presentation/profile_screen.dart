@@ -5,6 +5,9 @@ import '../../../shared/widgets/app_icons.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../achievements/presentation/achievements_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/quest_provider.dart';
+import '../../../core/utils/leveling.dart';
 
 enum AttributeTrend { up, down, flat }
 
@@ -80,15 +83,18 @@ class LevelTier {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
-    const currentLevel = 12;
-    final tier = LevelTier.forLevel(currentLevel);
+    final liveXp = ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
+final totalXp = Leveling.totalXp(liveXp);
+final currentLevel = Leveling.levelForXp(totalXp);
+final xpIntoLevel = Leveling.xpIntoCurrentLevel(totalXp);
+final tier = LevelTier.forLevel(currentLevel);
 
     return Scaffold(
       body: AmbientGlowBackground(
@@ -165,14 +171,14 @@ class ProfileScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(99),
                               child: SizedBox(
                                 width: 90,
-                                child: LinearProgressIndicator(value: 0.49, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.08), color: tier.color),
+                                child: LinearProgressIndicator(value: xpIntoLevel / Leveling.xpForNextLevel, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.08), color: tier.color),
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Text('2,450\n/ 5,000 XP', textAlign: TextAlign.right, style: TextStyle(fontSize: 9, color: mutedColor)),
+                    Text('$xpIntoLevel\n/ ${Leveling.xpForNextLevel} XP', textAlign: TextAlign.right, style: TextStyle(fontSize: 9, color: mutedColor)),
                   ],
                 ),
               ),

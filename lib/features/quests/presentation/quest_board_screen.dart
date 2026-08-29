@@ -6,6 +6,7 @@ import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
 import '../../../core/models/quest.dart';
 import '../../../core/providers/quest_provider.dart';
+import '../../../core/utils/leveling.dart';
 
 class QuestBoardScreen extends ConsumerStatefulWidget {
   const QuestBoardScreen({super.key});
@@ -18,11 +19,9 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
   late final TabController _tabController;
   QuestCategory? _selectedCategory;
 
-  static const _currentLevel = 12;
-  static const _currentXp = 2450;
-  static const _xpForNextLevel = 5000;
-  static const _xpThisMonth = 2750;
-  static const _completedThisMonth = 6;
+ int _totalXp(WidgetRef ref) => Leveling.totalXp(
+      ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp),
+    );
 
   @override
   void initState() {
@@ -190,7 +189,10 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
     final accent = Theme.of(context).colorScheme.primary;
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
-    final tier = LevelTier.forLevel(_currentLevel);
+    final totalXp = _totalXp(ref);
+final currentLevel = Leveling.levelForXp(totalXp);
+final currentXp = Leveling.xpIntoCurrentLevel(totalXp);
+final tier = LevelTier.forLevel(currentLevel);
 
     return Scaffold(
       body: AmbientGlowBackground(
@@ -240,7 +242,7 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
                               borderRadius: BorderRadius.circular(14),
                             ),
                             alignment: Alignment.center,
-                            child: Text('$_currentLevel', style: AppTextStyles.stat(context, size: 16, color: tier.color)),
+                            child: Text('$currentLevel', style: AppTextStyles.stat(context, size: 16, color: tier.color)),
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -253,7 +255,7 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
                                 child: SizedBox(
                                   width: 90,
                                   child: LinearProgressIndicator(
-                                    value: _currentXp / _xpForNextLevel,
+                                    value: currentXp / Leveling.xpForNextLevel,
                                     minHeight: 4,
                                     backgroundColor: Colors.white.withOpacity(0.08),
                                     color: tier.color,
@@ -268,8 +270,8 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text('THIS MONTH', style: TextStyle(fontSize: 9, letterSpacing: 0.5, color: mutedColor)),
-                          Text('$_xpThisMonth XP', style: AppTextStyles.stat(context, size: 15, color: accent)),
-                          Text('$_completedThisMonth completed', style: TextStyle(fontSize: 9, color: mutedColor)),
+Text('$totalXp XP', style: AppTextStyles.stat(context, size: 15, color: accent)),
+Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', style: TextStyle(fontSize: 9, color: mutedColor)),
                         ],
                       ),
                     ],
