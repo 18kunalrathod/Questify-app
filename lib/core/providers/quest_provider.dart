@@ -68,6 +68,23 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
     ];
   }
 
+  // Add a brand new quest, created by the user via the "+" button.
+  void addQuest({
+    required String title,
+    required int xp,
+    required QuestCategory category,
+    required QuestPeriod period,
+  }) {
+    final newQuest = Quest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      xp: xp,
+      category: category,
+      period: period,
+    );
+    state = [...state, newQuest];
+  }
+
   List<Quest> forPeriod(QuestPeriod period) {
     return state.where((q) => q.period == period).toList();
   }

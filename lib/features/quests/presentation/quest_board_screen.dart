@@ -48,6 +48,143 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
     return source.where((q) => q.category == _selectedCategory).toList();
   }
 
+  Future<void> _showCreateQuestSheet() async {
+    final titleController = TextEditingController();
+    QuestCategory selectedCategory = QuestCategory.personal;
+    QuestPeriod selectedPeriod = switch (_tabController.index) {
+      0 => QuestPeriod.daily,
+      1 => QuestPeriod.weekly,
+      _ => QuestPeriod.monthly,
+    };
+    int xp = 30;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(sheetContext).viewInsets.bottom + 20),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              final accent = Theme.of(context).colorScheme.primary;
+              final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('New quest', style: AppTextStyles.headline(context, size: 17)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: titleController,
+                    autofocus: true,
+                    decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. Meal prep for the week'),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Category', style: TextStyle(fontSize: 11, color: mutedColor)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: QuestCategory.values.map((category) {
+                      final isSelected = selectedCategory == category;
+                      return GestureDetector(
+                        onTap: () => setSheetState(() => selectedCategory = category),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? accent : Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            category.label,
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Theme.of(context).scaffoldBackgroundColor : mutedColor),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Period', style: TextStyle(fontSize: 11, color: mutedColor)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: QuestPeriod.values.map((period) {
+                      final isSelected = selectedPeriod == period;
+                      final label = switch (period) {
+                        QuestPeriod.daily => 'Daily',
+                        QuestPeriod.weekly => 'Weekly',
+                        QuestPeriod.monthly => 'Monthly',
+                      };
+                      return GestureDetector(
+                        onTap: () => setSheetState(() => selectedPeriod = period),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? accent : Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isSelected ? Theme.of(context).scaffoldBackgroundColor : mutedColor),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('XP reward', style: TextStyle(fontSize: 11, color: mutedColor)),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline, size: 20),
+                            onPressed: () => setSheetState(() => xp = (xp - 10).clamp(10, 500)),
+                          ),
+                          SizedBox(width: 40, child: Text('$xp', textAlign: TextAlign.center, style: AppTextStyles.stat(context, size: 15))),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline, size: 20),
+                            onPressed: () => setSheetState(() => xp = (xp + 10).clamp(10, 500)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (titleController.text.trim().isEmpty) return;
+                        ref.read(questProvider.notifier).addQuest(
+                              title: titleController.text.trim(),
+                              xp: xp,
+                              category: selectedCategory,
+                              period: selectedPeriod,
+                            );
+                        Navigator.of(sheetContext).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: Theme.of(context).scaffoldBackgroundColor,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+                      ),
+                      child: const Text('Create quest', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
@@ -73,7 +210,7 @@ class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with Single
                       ],
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: _showCreateQuestSheet,
                       icon: Icon(Icons.add_circle, color: accent, size: 28),
                     ),
                   ],
