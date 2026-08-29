@@ -1,106 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../profile/presentation/profile_screen.dart' show LevelTier;
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
+import '../../../core/models/quest.dart';
+import '../../../core/providers/quest_provider.dart';
 
-enum QuestCategory { fitness, focus, knowledge, personal }
-
-extension QuestCategoryX on QuestCategory {
-  String get label => switch (this) {
-        QuestCategory.fitness => 'Fitness',
-        QuestCategory.focus => 'Focus',
-        QuestCategory.knowledge => 'Knowledge',
-        QuestCategory.personal => 'Personal',
-      };
-
-  AppIcon get icon => switch (this) {
-        QuestCategory.fitness => AppIcon.streak,
-        QuestCategory.focus => AppIcon.focus,
-        QuestCategory.knowledge => AppIcon.document,
-        QuestCategory.personal => AppIcon.checklist,
-      };
-}
-
-enum QuestRarity { common, epic }
-
-class Quest {
-  final String title;
-  final String? description;
-  final int xp;
-  final QuestCategory category;
-  final QuestRarity rarity;
-  final bool completed;
-  final double? progress;
-  final String? dueLabel;
-
-  const Quest({
-    required this.title,
-    this.description,
-    required this.xp,
-    required this.category,
-    this.rarity = QuestRarity.common,
-    this.completed = false,
-    this.progress,
-    this.dueLabel,
-  });
-}
-
-const _dailyQuests = [
-  Quest(title: 'Morning workout', xp: 50, category: QuestCategory.fitness, completed: true),
-  Quest(title: 'Read 20 pages', xp: 30, category: QuestCategory.knowledge),
-  Quest(title: 'Flutter deep work', xp: 80, category: QuestCategory.focus),
-  Quest(title: 'Evening walk', xp: 20, category: QuestCategory.personal),
-];
-
-const _weeklyQuests = [
-  Quest(
-    title: 'Finish portfolio homepage',
-    description: 'Design and build the landing page.',
-    xp: 200,
-    category: QuestCategory.focus,
-    rarity: QuestRarity.epic,
-    progress: 0.55,
-    dueLabel: 'Due in 4 days',
-  ),
-  Quest(
-    title: '4 gym sessions this week',
-    xp: 150,
-    category: QuestCategory.fitness,
-    progress: 1.0,
-    completed: true,
-    dueLabel: 'Completed',
-  ),
-];
-
-const _monthlyQuests = [
-  Quest(
-    title: 'Ship Questify v1',
-    description: 'Complete the core features and ship your v1.0',
-    xp: 500,
-    category: QuestCategory.focus,
-    rarity: QuestRarity.epic,
-    progress: 0.80,
-    dueLabel: 'Due in 10 days',
-  ),
-  Quest(
-    title: 'Run a 5K',
-    description: 'Build endurance and crush your 5K run.',
-    xp: 300,
-    category: QuestCategory.fitness,
-    progress: 0.60,
-    dueLabel: 'Due in 7 days',
-  ),
-];
-
-class QuestBoardScreen extends StatefulWidget {
+class QuestBoardScreen extends ConsumerStatefulWidget {
   const QuestBoardScreen({super.key});
 
   @override
-  State<QuestBoardScreen> createState() => _QuestBoardScreenState();
+  ConsumerState<QuestBoardScreen> createState() => _QuestBoardScreenState();
 }
 
-class _QuestBoardScreenState extends State<QuestBoardScreen> with SingleTickerProviderStateMixin {
+class _QuestBoardScreenState extends ConsumerState<QuestBoardScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   QuestCategory? _selectedCategory;
 
@@ -123,11 +37,13 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> with SingleTickerPr
   }
 
   List<Quest> _questsForCurrentTab() {
-    final source = switch (_tabController.index) {
-      0 => _dailyQuests,
-      1 => _weeklyQuests,
-      _ => _monthlyQuests,
+    final allQuests = ref.watch(questProvider);
+    final period = switch (_tabController.index) {
+      0 => QuestPeriod.daily,
+      1 => QuestPeriod.weekly,
+      _ => QuestPeriod.monthly,
     };
+    final source = allQuests.where((q) => q.period == period).toList();
     if (_selectedCategory == null) return source;
     return source.where((q) => q.category == _selectedCategory).toList();
   }
@@ -266,9 +182,13 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> with SingleTickerPr
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final quest = quests[index];
-                      return quest.progress != null
+                      final card = quest.progress != null
                           ? _GoalQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor)
                           : _SimpleQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor);
+                      return GestureDetector(
+                        onTap: () => ref.read(questProvider.notifier).toggleComplete(quest.id),
+                        child: card,
+                      );
                     },
                   );
                 }),
