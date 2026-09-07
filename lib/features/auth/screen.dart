@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../shared/widgets/fade_through_route.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../core/theme/app_theme.dart';
@@ -18,6 +19,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   late final AnimationController _rotateController;
   late final AnimationController _pulseController;
@@ -25,13 +27,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // Slow continuous rotation for the outer dashed ring.
     _rotateController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 18),
     )..repeat();
 
-    // Gentle breathing pulse for the inner rings.
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3500),
@@ -47,11 +47,47 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _continueToApp() {
-  
-  Navigator.of(context).pushReplacement(
-  FadeThroughRoute(page: const AppShell()),
-);
+  Future<void> _submitAuth() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Please enter both email and password.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (_mode == AuthMode.login) {
+        await Supabase.instance.client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+      } else {
+        await Supabase.instance.client.auth.signUp(
+          email: email,
+          password: password,
+        );
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        FadeThroughRoute(page: const AppShell()),
+      );
+    } on AuthException catch (e) {
+      _showError(e.message);
+    } catch (e) {
+      _showError('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
   }
 
   @override
@@ -64,7 +100,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: Column(
         children: [
-          // ---------- Animated header ----------
           SizedBox(
             height: 260,
             width: double.infinity,
@@ -73,19 +108,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Outer rotating dashed ring
                   AnimatedBuilder(
                     animation: _rotateController,
                     builder: (context, child) {
                       return Transform.rotate(
-                        angle: _rotateController.value * 6.28319, // 2π
+                        angle: _rotateController.value * 6.28319,
                         child: child,
                       );
                     },
                     child: _RingOutline(size: 190, color: accent.withOpacity(0.3), dashed: true),
                   ),
-
-                  // Two pulsing inner rings, offset from each other
                   AnimatedBuilder(
                     animation: _pulseController,
                     builder: (context, child) {
@@ -101,7 +133,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   AnimatedBuilder(
                     animation: _pulseController,
                     builder: (context, child) {
-                      final value = (1 - _pulseController.value); // offset rhythm
+                      final value = (1 - _pulseController.value);
                       final scale = 1 + (value * 0.1);
                       final opacity = 0.25 + (value * 0.25);
                       return Transform.scale(
@@ -111,8 +143,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     },
                     child: _RingOutline(size: 130, color: accent),
                   ),
-
-                  // Soft filled center glow
                   Container(
                     width: 80,
                     height: 80,
@@ -121,32 +151,26 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       color: accent.withOpacity(0.12),
                     ),
                   ),
-
-                  // Logo mark
                   Positioned(
                     top: 90,
                     child: Icon(Icons.shield_outlined, size: 52, color: accent),
                   ),
-
-                  // Wordmark — Q in accent color, rest neutral
                   Positioned(
                     bottom: 24,
                     child: Text.rich(
-   TextSpan(
-    style: AppTextStyles.headline(context, size: 20),
-    children: [
-      TextSpan(text: 'Q', style: TextStyle(color: accent)),
-      const TextSpan(text: 'uestify'),
-    ],
-  ),
-),
+                      TextSpan(
+                        style: AppTextStyles.headline(context, size: 20),
+                        children: [
+                          TextSpan(text: 'Q', style: TextStyle(color: accent)),
+                          const TextSpan(text: 'uestify'),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-
-          // ---------- Glassmorphic form card ----------
           Expanded(
             child: Transform.translate(
               offset: const Offset(0, -28),
@@ -167,10 +191,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                         Text(
-  isLogin ? 'Welcome back' : 'Create your account',
-  style: AppTextStyles.headline(context, size: 22),
-),
+                          Text(
+                            isLogin ? 'Welcome back' : 'Create your account',
+                            style: AppTextStyles.headline(context, size: 22),
+                          ),
                           const SizedBox(height: 6),
                           Text(
                             isLogin
@@ -179,8 +203,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                             style: TextStyle(color: mutedColor, fontSize: 13),
                           ),
                           const SizedBox(height: 24),
-
-                          // Login / Signup toggle
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
@@ -204,9 +226,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 24),
-
                           _GlassField(label: 'Email', hint: 'you@example.com', controller: _emailController),
                           const SizedBox(height: 12),
                           _GlassField(
@@ -223,7 +243,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
-
                           if (isLogin) ...[
                             const SizedBox(height: 6),
                             Align(
@@ -234,27 +253,29 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               ),
                             ),
                           ],
-
                           const SizedBox(height: 18),
-
                           SizedBox(
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: _continueToApp,
+                              onPressed: _isSubmitting ? null : _submitAuth,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: accent,
                                 foregroundColor: Theme.of(context).scaffoldBackgroundColor,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
                               ),
-                              child: Text(
-                                isLogin ? 'Log in' : 'Create account',
-                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                              ),
+                              child: _isSubmitting
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).scaffoldBackgroundColor),
+                                    )
+                                  : Text(
+                                      isLogin ? 'Log in' : 'Create account',
+                                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                    ),
                             ),
                           ),
-
                           const SizedBox(height: 22),
-
                           Row(
                             children: [
                               Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
@@ -265,18 +286,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
                             ],
                           ),
-
                           const SizedBox(height: 18),
-
                           Row(
                             children: [
                               Expanded(
                                 child: _AltAuthButton(
-                                  // TODO: swap for the official multi-color Google "G" asset
-                                  // before shipping — required by Google's brand guidelines.
                                   leading: const Text('G', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
                                   label: 'Google',
-                                  onTap: _continueToApp,
+                                  onTap: () => _showError('Google sign-in coming soon.'),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -284,12 +301,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                 child: _AltAuthButton(
                                   leading: const Icon(Icons.phone_outlined, size: 16),
                                   label: 'Phone',
-                                  onTap: _continueToApp,
+                                  onTap: () => _showError('Phone sign-in coming soon.'),
                                 ),
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 12),
                         ],
                       ),
