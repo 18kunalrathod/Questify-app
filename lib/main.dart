@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/screen.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Holds the currently selected accent color.
 /// Defaults to gold — our one locked accent for now.
@@ -11,7 +12,12 @@ final accentColorProvider = StateProvider<AccentColor>((ref) => AccentColor.gold
 /// Holds the current theme mode (light/dark/system).
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://lhahpoiiygszzqjsljlu.supabase.co',
+    anonKey: 'sb_publishable_6FgOUPg4AGKMUpPdVp0vBA_sX3G39Ms',
+  );
   runApp(const ProviderScope(child: QuestifyApp()));
 }
 
