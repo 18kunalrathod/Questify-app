@@ -55,7 +55,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     if (_titleController.text.trim().isEmpty) return;
 
     final note = Note(
-      id: widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: widget.note?.id ?? '',
       title: _titleController.text.trim(),
       category: _category,
       content: _quillController.document,

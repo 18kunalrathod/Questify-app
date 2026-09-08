@@ -1,96 +1,95 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/quest.dart';
 
-// The "notebook keeper" — holds the real quest list and defines the
-// only ways it's allowed to change (toggle completion, add a quest, etc.)
 class QuestNotifier extends StateNotifier<List<Quest>> {
-  QuestNotifier() : super(_initialQuests);
+  QuestNotifier() : super(const []) {
+    loadQuests();
+  }
 
-  static const _initialQuests = [
-    // ---------- DAILY ----------
-    Quest(id: 'd1', title: 'Morning workout', xp: 50, category: QuestCategory.fitness, period: QuestPeriod.daily, completed: true),
-    Quest(id: 'd2', title: 'Read 20 pages', xp: 30, category: QuestCategory.knowledge, period: QuestPeriod.daily),
-    Quest(id: 'd3', title: 'Flutter deep work', xp: 80, category: QuestCategory.focus, period: QuestPeriod.daily),
-    Quest(id: 'd4', title: 'Evening walk', xp: 20, category: QuestCategory.personal, period: QuestPeriod.daily),
+  final SupabaseClient _client = Supabase.instance.client;
 
-    // ---------- WEEKLY ----------
-    Quest(
-      id: 'w1',
-      title: 'Finish portfolio homepage',
-      description: 'Design and build the landing page.',
-      xp: 200,
-      category: QuestCategory.focus,
-      rarity: QuestRarity.epic,
-      period: QuestPeriod.weekly,
-      progress: 0.55,
-      dueLabel: 'Due in 4 days',
-    ),
-    Quest(
-      id: 'w2',
-      title: '4 gym sessions this week',
-      xp: 150,
-      category: QuestCategory.fitness,
-      period: QuestPeriod.weekly,
-      progress: 1.0,
-      completed: true,
-      dueLabel: 'Completed',
-    ),
+  Future<void> loadQuests() async {
+    final user = _client.auth.currentUser;
 
-    // ---------- MONTHLY ----------
-    Quest(
-      id: 'm1',
-      title: 'Ship Questify v1',
-      description: 'Complete the core features and ship your v1.0',
-      xp: 500,
-      category: QuestCategory.focus,
-      rarity: QuestRarity.epic,
-      period: QuestPeriod.monthly,
-      progress: 0.80,
-      dueLabel: 'Due in 10 days',
-    ),
-    Quest(
-      id: 'm2',
-      title: 'Run a 5K',
-      description: 'Build endurance and crush your 5K run.',
-      xp: 300,
-      category: QuestCategory.fitness,
-      period: QuestPeriod.monthly,
-      progress: 0.60,
-      dueLabel: 'Due in 7 days',
-    ),
-  ];
+    if (user == null) {
+      state = [];
+      return;
+    }
 
-  // Toggle a specific quest's completion by its id.
-  void toggleComplete(String questId) {
+    final response = await _client
+        .from('quests')
+        .select()
+        .order('created_at');
+
+    final rows = response as List<dynamic>;
+
+    state = rows
+        .map(
+          (row) => Quest.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> toggleComplete(String questId) async {
+    final quest = state.firstWhere((item) => item.id == questId);
+
+    final updatedRow = await _client
+        .from('quests')
+        .update({'completed': !quest.completed})
+        .eq('id', questId)
+        .select()
+        .single();
+
+    final updatedQuest = Quest.fromJson(
+      Map<String, dynamic>.from(updatedRow),
+    );
+
     state = [
-      for (final quest in state)
-        if (quest.id == questId) quest.copyWith(completed: !quest.completed) else quest,
+      for (final item in state)
+        if (item.id == questId) updatedQuest else item,
     ];
   }
 
-  // Add a brand new quest, created by the user via the "+" button.
-  void addQuest({
+  Future<void> addQuest({
     required String title,
     required int xp,
     required QuestCategory category,
     required QuestPeriod period,
-  }) {
-    final newQuest = Quest(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      xp: xp,
-      category: category,
-      period: period,
+  }) async {
+    final user = _client.auth.currentUser;
+
+    if (user == null) {
+      throw StateError('You must be signed in to create a quest.');
+    }
+
+    final createdRow = await _client
+        .from('quests')
+        .insert({
+          'user_id': user.id,
+          'title': title,
+          'xp': xp,
+          'category': category.name,
+          'period': period.name,
+        })
+        .select()
+        .single();
+
+    final createdQuest = Quest.fromJson(
+      Map<String, dynamic>.from(createdRow),
     );
-    state = [...state, newQuest];
+
+    state = [...state, createdQuest];
   }
 
   List<Quest> forPeriod(QuestPeriod period) {
-    return state.where((q) => q.period == period).toList();
+    return state.where((quest) => quest.period == period).toList();
   }
 }
 
-// The actual provider — this is what screens import and watch.
 final questProvider = StateNotifierProvider<QuestNotifier, List<Quest>>((ref) {
   return QuestNotifier();
 });

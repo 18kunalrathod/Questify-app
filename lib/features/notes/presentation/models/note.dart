@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 enum NoteCategory { programming, gym, ideas, personal }
@@ -11,6 +12,7 @@ extension NoteCategoryX on NoteCategory {
       };
 }
 
+@immutable
 class Note {
   final String id;
   final String title;
@@ -19,7 +21,7 @@ class Note {
   final DateTime updatedAt;
   final List<String> attachedFilePaths;
 
-  Note({
+  const Note({
     required this.id,
     required this.title,
     required this.category,
@@ -28,8 +30,39 @@ class Note {
     this.attachedFilePaths = const [],
   });
 
+  factory Note.fromJson(Map<String, dynamic> json) {
+    return Note(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      category: NoteCategory.values.byName(json['category'] as String),
+      content: quill.Document.fromJson(
+        List<dynamic>.from(json['content'] as List),
+      ),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toInsertJson(String userId) {
+    return {
+      'user_id': userId,
+      'title': title,
+      'category': category.name,
+      'content': content.toDelta().toJson(),
+    };
+  }
+
+  Map<String, dynamic> toUpdateJson() {
+    return {
+      'title': title,
+      'category': category.name,
+      'content': content.toDelta().toJson(),
+    };
+  }
+
   String get preview {
     final plainText = content.toPlainText().trim();
-    return plainText.length > 60 ? '${plainText.substring(0, 60)}...' : plainText;
+    return plainText.length > 60
+        ? '${plainText.substring(0, 60)}...'
+        : plainText;
   }
 }

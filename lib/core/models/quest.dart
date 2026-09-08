@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../shared/widgets/app_icons.dart';
 
 enum QuestCategory { fitness, focus, knowledge, personal }
@@ -49,7 +50,21 @@ class Quest {
     this.dueLabel,
   });
 
-  // Creates a copy with some fields replaced — used when toggling completion.
+  factory Quest.fromJson(Map<String, dynamic> json) {
+    return Quest(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      xp: json['xp'] as int,
+      category: QuestCategory.values.byName(json['category'] as String),
+      rarity: QuestRarity.values.byName(json['rarity'] as String),
+      period: QuestPeriod.values.byName(json['period'] as String),
+      completed: json['completed'] as bool,
+      progress: (json['progress'] as num?)?.toDouble(),
+      dueLabel: json['due_label'] as String?,
+    );
+  }
+
   Quest copyWith({bool? completed, double? progress}) {
     return Quest(
       id: id,

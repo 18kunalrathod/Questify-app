@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/screen.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'shared/widgets/app_shell.dart';
 
 /// Holds the currently selected accent color.
 /// Defaults to gold — our one locked accent for now.
@@ -28,6 +29,7 @@ class QuestifyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = ref.watch(accentColorProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final hasSession = Supabase.instance.client.auth.currentSession != null;
 
   return MaterialApp(
   title: 'Questify',
@@ -37,7 +39,7 @@ class QuestifyApp extends ConsumerWidget {
   darkTheme: AppTheme.darkTheme(accent),
   localizationsDelegates: quill.FlutterQuillLocalizations.localizationsDelegates,
   supportedLocales: quill.FlutterQuillLocalizations.supportedLocales,
-  home: const SplashScreen(),
+  home: hasSession ? const AppShell() : const SplashScreen(),
 );
   }
 }
