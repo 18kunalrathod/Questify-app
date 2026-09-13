@@ -4,6 +4,8 @@ import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'models/note.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 class NoteEditorScreen extends StatefulWidget {
   final Note? note; // null = creating a new note
@@ -19,6 +21,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   late final quill.QuillController _quillController;
   late NoteCategory _category;
   late List<String> _attachedFiles;
+  bool _isUploadingFile = false;
 
   bool get _isEditing => widget.note != null;
 
@@ -42,9 +45,36 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   Future<void> _attachFile() async {
-   final result = await FilePicker.pickFiles(allowMultiple: false);
+    final result = await FilePicker.pickFiles(allowMultiple: false);
     if (result == null || result.single.path == null) return;
-    setState(() => _attachedFiles.add(result.single.path!));
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final localPath = result.single.path!;
+    final fileName = result.single.name;
+    final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+
+    setState(() => _isUploadingFile = true);
+
+    try {
+      await Supabase.instance.client.storage
+          .from('note-attachments')
+          .upload(storagePath, File(localPath));
+
+      setState(() {
+        _attachedFiles.add(storagePath);
+        _isUploadingFile = false;
+      });
+    } catch (e) {
+      setState(() => _isUploadingFile = false);
+      debugPrint('Upload failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: $e')),
+        );
+      }
+    }
   }
 
   void _removeAttachment(String path) {
@@ -93,7 +123,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     decoration: const InputDecoration(hintText: 'Note title', border: InputBorder.none),
                   ),
                   const SizedBox(height: 8),
-                  // Category picker
                   SizedBox(
                     height: 32,
                     child: ListView(
@@ -123,7 +152,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               ),
             ),
 
-            // Attached files, shown as a horizontal chip row if any exist
             if (_attachedFiles.isNotEmpty)
               SizedBox(
                 height: 40,
@@ -155,8 +183,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   config: quill.QuillEditorConfig(
                     embedBuilders: FlutterQuillEmbeds.editorBuilders(
                       imageEmbedConfig: QuillEditorImageEmbedConfig(
-                        imageProviderBuilder: (context, imageUrl) => NetworkImage(imageUrl),
-                      ),
+                       imageProviderBuilder: (context, imageUrl) {
+                        if (imageUrl.startsWith('http')) {
+                         return NetworkImage(imageUrl);
+                        }
+                    return FileImage(File(imageUrl));
+  },
+),
                     ),
                   ),
                 ),
@@ -190,11 +223,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.attach_file, size: 20),
-                      onPressed: _attachFile,
-                      tooltip: 'Attach file',
-                    ),
+                    _isUploadingFile
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.attach_file, size: 20),
+                            onPressed: _attachFile,
+                            tooltip: 'Attach file',
+                          ),
                   ],
                 ),
               ),
