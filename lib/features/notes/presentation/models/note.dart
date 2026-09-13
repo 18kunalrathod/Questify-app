@@ -39,6 +39,7 @@ class Note {
         List<dynamic>.from(json['content'] as List),
       ),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      attachedFilePaths: List<String>.from(json['attached_file_paths'] as List? ?? []),
     );
   }
 
@@ -48,6 +49,7 @@ class Note {
       'title': title,
       'category': category.name,
       'content': content.toDelta().toJson(),
+      'attached_file_paths': attachedFilePaths,
     };
   }
 
@@ -56,6 +58,7 @@ class Note {
       'title': title,
       'category': category.name,
       'content': content.toDelta().toJson(),
+      'attached_file_paths': attachedFilePaths,
     };
   }
 

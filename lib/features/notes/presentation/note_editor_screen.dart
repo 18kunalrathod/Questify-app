@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'models/note.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final Note? note; // null = creating a new note
@@ -79,6 +80,54 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   void _removeAttachment(String path) {
     setState(() => _attachedFiles.remove(path));
+  }
+
+  bool _isImageFile(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.png') ||
+        lower.endsWith('.gif') ||
+        lower.endsWith('.webp');
+  }
+
+  Future<void> _openAttachment(String storagePath) async {
+    try {
+      final signedUrl = await Supabase.instance.client.storage
+          .from('note-attachments')
+          .createSignedUrl(storagePath, 60);
+
+      if (!mounted) return;
+
+      if (_isImageFile(storagePath)) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                InteractiveViewer(
+                  child: Image.network(signedUrl),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        await launchUrl(Uri.parse(signedUrl), mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open file: $e')),
+        );
+      }
+    }
   }
 
   void _saveAndExit() {
@@ -163,11 +212,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   itemBuilder: (context, index) {
                     final path = _attachedFiles[index];
                     final fileName = path.split('/').last;
-                    return Chip(
-                      label: Text(fileName, style: const TextStyle(fontSize: 10)),
-                      deleteIcon: const Icon(Icons.close, size: 14),
-                      onDeleted: () => _removeAttachment(path),
-                      backgroundColor: cardColor,
+                    return GestureDetector(
+                      onTap: () => _openAttachment(path),
+                      child: Chip(
+                        label: Text(fileName, style: const TextStyle(fontSize: 10)),
+                        deleteIcon: const Icon(Icons.close, size: 14),
+                        onDeleted: () => _removeAttachment(path),
+                        backgroundColor: cardColor,
+                      ),
                     );
                   },
                 ),
@@ -183,13 +235,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   config: quill.QuillEditorConfig(
                     embedBuilders: FlutterQuillEmbeds.editorBuilders(
                       imageEmbedConfig: QuillEditorImageEmbedConfig(
-                       imageProviderBuilder: (context, imageUrl) {
-                        if (imageUrl.startsWith('http')) {
-                         return NetworkImage(imageUrl);
-                        }
-                    return FileImage(File(imageUrl));
-  },
-),
+                        imageProviderBuilder: (context, imageUrl) {
+                          if (imageUrl.startsWith('http')) {
+                            return NetworkImage(imageUrl);
+                          }
+                          return FileImage(File(imageUrl.replaceFirst('file://', '')));
+                        },
+                      ),
                     ),
                   ),
                 ),
