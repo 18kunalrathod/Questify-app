@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
+import 'calendar_provider.dart';
 
 enum CalendarView { month, week, day }
 
@@ -28,36 +30,58 @@ class CalendarEvent {
       isQuestDeadline: isQuestDeadline,
     );
   }
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) {
+    return CalendarEvent(
+      id: json['id'] as String,
+      date: DateTime.parse(json['event_date'] as String),
+      title: json['title'] as String,
+      time: json['time_label'] as String,
+      isQuestDeadline: json['is_quest_deadline'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toInsertJson(String userId) {
+    return {
+      'user_id': userId,
+      'title': title,
+      'event_date': date.toIso8601String(),
+      'time_label': time,
+      'is_quest_deadline': isQuestDeadline,
+    };
+  }
+
+  Map<String, dynamic> toUpdateJson() {
+    return {
+      'title': title,
+      'event_date': date.toIso8601String(),
+      'time_label': time,
+    };
+  }
 }
 
-class CalendarScreen extends StatefulWidget {
+class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
+class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   CalendarView _view = CalendarView.week;
   DateTime _selectedDate = DateTime(2026, 8, 17);
   DateTime _visibleMonth = DateTime(2026, 8, 1);
 
-  final List<CalendarEvent> _events = [
-    CalendarEvent(id: 'e1', date: DateTime(2026, 8, 17, 9), title: 'Focus session', time: '9:00 AM'),
-    CalendarEvent(id: 'e2', date: DateTime(2026, 8, 17, 14), title: 'Ship Questify v1 due', time: '2:00 PM', isQuestDeadline: true),
-    CalendarEvent(id: 'e3', date: DateTime(2026, 8, 17, 18), title: 'Gym session', time: '6:00 PM'),
-    CalendarEvent(id: 'e4', date: DateTime(2026, 8, 18, 10), title: 'Read 20 pages', time: '10:00 AM'),
-    CalendarEvent(id: 'e5', date: DateTime(2026, 8, 20, 15), title: 'Run a 5K due', time: '3:00 PM', isQuestDeadline: true),
-  ];
-
   List<CalendarEvent> get _eventsForSelectedDate {
-    return _events.where((e) =>
+    final events = ref.watch(calendarProvider);
+    return events.where((e) =>
         e.date.year == _selectedDate.year && e.date.month == _selectedDate.month && e.date.day == _selectedDate.day).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
   }
 
   bool _hasEventsOn(DateTime date) {
-    return _events.any((e) => e.date.year == date.year && e.date.month == date.month && e.date.day == date.day);
+    final events = ref.watch(calendarProvider);
+    return events.any((e) => e.date.year == date.year && e.date.month == date.month && e.date.day == date.day);
   }
 
   List<DateTime> get _currentWeekDays {
@@ -66,30 +90,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _addEvent(String title, TimeOfDay time) {
-    setState(() {
-      _events.add(CalendarEvent(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        date: DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, time.hour, time.minute),
-        title: title,
-        time: time.format(context),
-      ));
-    });
+    final newEvent = CalendarEvent(
+      id: '',
+      date: DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, time.hour, time.minute),
+      title: title,
+      time: time.format(context),
+    );
+    ref.read(calendarProvider.notifier).addEvent(newEvent);
   }
 
   void _updateEvent(String id, String title, TimeOfDay time) {
-    setState(() {
-      final index = _events.indexWhere((e) => e.id == id);
-      if (index == -1) return;
-      _events[index] = _events[index].copyWith(
-        title: title,
-        time: time.format(context),
-        date: DateTime(_events[index].date.year, _events[index].date.month, _events[index].date.day, time.hour, time.minute),
-      );
-    });
+    final existing = ref.read(calendarProvider).firstWhere((e) => e.id == id);
+    final updated = existing.copyWith(
+      title: title,
+      time: time.format(context),
+      date: DateTime(existing.date.year, existing.date.month, existing.date.day, time.hour, time.minute),
+    );
+    ref.read(calendarProvider.notifier).updateEvent(updated);
   }
 
   void _deleteEvent(String id) {
-    setState(() => _events.removeWhere((e) => e.id == id));
+    ref.read(calendarProvider.notifier).deleteEvent(id);
   }
 
   Future<void> _showEventSheet({CalendarEvent? existingEvent}) async {
