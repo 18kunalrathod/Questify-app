@@ -6,6 +6,7 @@ import '../../analytics/presentation/analytics_screen.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
+import '../../ledger/presentation/ledger_screen.dart';
 
 class _Quest {
   final String title;
@@ -195,7 +196,7 @@ class DashboardScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotesScreen())),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LedgerScreen())),
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),

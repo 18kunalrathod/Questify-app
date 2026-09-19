@@ -150,6 +150,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     final accent = Theme.of(context).colorScheme.primary;
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
+    final categoryColor = _category.accentColor;
 
     return Scaffold(
       appBar: AppBar(
@@ -162,35 +163,66 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: categoryColor.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      _category.icon,
+                      size: 28,
+                      color: categoryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    decoration: const InputDecoration(hintText: 'Note title', border: InputBorder.none),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                    decoration: const InputDecoration(
+                      hintText: 'Note title',
+                      border: InputBorder.none,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   SizedBox(
-                    height: 32,
+                    height: 34,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: NoteCategory.values.map((cat) {
                         final isSelected = _category == cat;
+                        final chipColor = cat.accentColor;
                         return Padding(
-                          padding: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.only(right: 8),
                           child: GestureDetector(
                             onTap: () => setState(() => _category = cat),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                               decoration: BoxDecoration(
-                                color: isSelected ? accent.withOpacity(0.15) : cardColor,
-                                border: isSelected ? Border.all(color: accent) : null,
+                                color: isSelected ? chipColor : cardColor,
+                                border: isSelected
+                                    ? null
+                                    : Border.all(color: Colors.white.withOpacity(0.08)),
                                 borderRadius: BorderRadius.circular(99),
                               ),
                               alignment: Alignment.center,
-                              child: Text(cat.label, style: TextStyle(fontSize: 10, color: isSelected ? accent : mutedColor)),
+                              child: Text(
+                                cat.label,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? Theme.of(context).scaffoldBackgroundColor
+                                      : mutedColor,
+                                ),
+                              ),
                             ),
                           ),
                         );

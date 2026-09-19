@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../calendar/presentation/calendar_screen.dart';
-import '../../notes/presentation/notes_screen.dart';
+import '../../ledger/presentation/ledger_screen.dart';
 import '../../analytics/presentation/analytics_screen.dart';
 
 class ToolItem {
@@ -22,7 +22,7 @@ class ToolsHubScreen extends StatelessWidget {
 
     final tools = [
       ToolItem(label: 'Calendar', icon: Icons.calendar_today_outlined, destination: const CalendarScreen()),
-      ToolItem(label: 'Notes & Vault', icon: Icons.menu_book_outlined, destination: const NotesScreen()),
+      ToolItem(label: 'The Ledger', icon: Icons.menu_book_outlined, destination: const LedgerScreen()),
       ToolItem(label: 'Analytics', icon: Icons.bar_chart_outlined, destination: const AnalyticsScreen()),
     ];
 

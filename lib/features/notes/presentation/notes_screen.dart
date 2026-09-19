@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/ambient_glow_background.dart';
 import 'models/note.dart';
 import 'note_editor_screen.dart';
 import 'note_provider.dart';
 
-class NotesScreen extends ConsumerStatefulWidget {
-  const NotesScreen({super.key});
+class NotesTab extends ConsumerStatefulWidget {
+  const NotesTab({super.key});
 
   @override
-  ConsumerState<NotesScreen> createState() => _NotesScreenState();
+  ConsumerState<NotesTab> createState() => _NotesTabState();
 }
 
-class _NotesScreenState extends ConsumerState<NotesScreen> {
+class _NotesTabState extends ConsumerState<NotesTab> {
   NoteCategory? _selectedCategory;
 
   List<Note> _filteredNotes(List<Note> notes) {
@@ -55,15 +54,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final notes = ref.watch(noteProvider);
     final filteredNotes = _filteredNotes(notes);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'The Ledger',
-          style: AppTextStyles.headline(context, size: 18),
-        ),
-      ),
-      body: AmbientGlowBackground(
-        child: SafeArea(
+    return Stack(
+      children: [
+        SafeArea(
           child: Column(
             children: [
               SizedBox(
@@ -76,7 +69,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   ),
                   children: [
                     _CategoryChip(
-                      label: 'All',
+                      label: 'All notes',
                       isSelected: _selectedCategory == null,
                       accent: accent,
                       onTap: () => setState(() {
@@ -108,74 +101,77 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                         ),
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 90),
                         itemCount: filteredNotes.length,
                         separatorBuilder: (_, __) =>
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final note = filteredNotes[index];
+                          final categoryColor = note.category.accentColor;
 
                           return GestureDetector(
                             onTap: () => _openNote(note),
                             child: Container(
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: cardColor,
-                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.06),
+                                ),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              child: Column(
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
+                                  Container(
+                                    width: 38,
+                                    height: 38,
+                                    decoration: BoxDecoration(
+                                      color: categoryColor.withOpacity(0.12),
+                                      borderRadius:
+                                          BorderRadius.circular(11),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      note.category.icon,
+                                      size: 18,
+                                      color: categoryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
                                           note.title,
                                           style: AppTextStyles.headline(
                                             context,
                                             size: 14,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: accent.withOpacity(0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(99),
-                                        ),
-                                        child: Text(
-                                          note.category.label,
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          note.preview,
                                           style: TextStyle(
-                                            fontSize: 9,
-                                            color: accent,
-                                            fontWeight: FontWeight.w600,
+                                            fontSize: 11,
+                                            color: mutedColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          _relativeTime(note.updatedAt),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: mutedColor?.withOpacity(0.7),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    note.preview,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: mutedColor,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _relativeTime(note.updatedAt),
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: mutedColor,
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -188,15 +184,19 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openNote(null),
-        backgroundColor: accent,
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).scaffoldBackgroundColor,
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: FloatingActionButton(
+            onPressed: () => _openNote(null),
+            backgroundColor: accent,
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -244,6 +244,9 @@ class _CategoryChip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected ? accent : Theme.of(context).cardTheme.color,
+            border: isSelected
+                ? null
+                : Border.all(color: Colors.white.withOpacity(0.08)),
             borderRadius: BorderRadius.circular(99),
           ),
           child: Text(

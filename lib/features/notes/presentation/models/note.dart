@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 enum NoteCategory { programming, gym, ideas, personal }
@@ -9,6 +9,20 @@ extension NoteCategoryX on NoteCategory {
         NoteCategory.gym => 'Gym',
         NoteCategory.ideas => 'Ideas',
         NoteCategory.personal => 'Personal',
+      };
+
+  IconData get icon => switch (this) {
+        NoteCategory.programming => Icons.code,
+        NoteCategory.gym => Icons.fitness_center,
+        NoteCategory.ideas => Icons.lightbulb_outline,
+        NoteCategory.personal => Icons.person_outline,
+      };
+
+  Color get accentColor => switch (this) {
+        NoteCategory.programming => const Color(0xFFE8B84B),
+        NoteCategory.gym => const Color(0xFF7FBF7F),
+        NoteCategory.ideas => const Color(0xFFD4537E),
+        NoteCategory.personal => const Color(0xFF7B9FE0),
       };
 }
 

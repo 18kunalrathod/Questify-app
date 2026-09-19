@@ -5,6 +5,7 @@ import '../../../shared/widgets/app_icons.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../achievements/presentation/achievements_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
+import '../../ledger/presentation/ledger_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../../core/utils/leveling.dart';
@@ -239,6 +240,28 @@ final tier = LevelTier.forLevel(currentLevel);
               ),
 
               const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(FadeThroughRoute(page: const LedgerScreen())),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.book_outlined, size: 18, color: mutedColor),
+                          const SizedBox(width: 10),
+                          Text('The Ledger', style: AppTextStyles.headline(context, size: 13)),
+                        ],
+                      ),
+                      Icon(Icons.chevron_right, size: 18, color: mutedColor),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(FadeThroughRoute(page: const AchievementsScreen())),
                 child: Container(

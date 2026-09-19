@@ -3,7 +3,6 @@ import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/quests/presentation/quest_board_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/focus/presentation/focus_screen.dart';
-import 'package:flutter/material.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -18,6 +17,7 @@ class _AppShellState extends State<AppShell> {
   final _tabs = const [
     DashboardScreen(),
     QuestBoardScreen(),
+    _PlaceholderTab(label: 'Trix'),
     FocusScreen(),
     ProfileScreen(),
   ];
@@ -25,10 +25,10 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey;
 
     return Scaffold(
-      // IndexedStack keeps all four tabs alive in memory and just shows/hides
+      // IndexedStack keeps all tabs alive in memory and just shows/hides
       // the active one — see explanation below for why this matters.
       body: IndexedStack(
         index: _currentIndex,
@@ -49,6 +49,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.track_changes_outlined, color: mutedColor),
             selectedIcon: Icon(Icons.track_changes, color: accent),
             label: 'Quests',
+          ),
+          NavigationDestination(
+            icon: OrbitRing(size: 22, color: mutedColor, duration: const Duration(seconds: 8)),
+            selectedIcon: OrbitRing(size: 22, color: accent, duration: const Duration(seconds: 8)),
+            label: 'Trix',
           ),
           NavigationDestination(
             icon: Icon(Icons.timer_outlined, color: mutedColor),
@@ -83,11 +88,10 @@ class _PlaceholderTab extends StatelessWidget {
   }
 }
 
-
-
-/// The recurring "signature" visual motif — a slowly rotating dashed ring.
-/// Used behind hero stats, avatars, logos, and timers throughout the app
-/// to create a consistent visual identity across every screen.
+/// The recurring "signature" visual motif — a slowly rotating dashed ring
+/// with an orbiting dot. Used behind hero stats, avatars, logos, and timers
+/// throughout the app to create a consistent visual identity across every
+/// screen — and as the Trix tab's nav-bar mark.
 class OrbitRing extends StatefulWidget {
   final double size;
   final Color color;
@@ -129,12 +133,32 @@ class _OrbitRingState extends State<OrbitRing> with SingleTickerProviderStateMix
           child: child,
         );
       },
-      child: Container(
+      child: SizedBox(
         width: widget.size,
         height: widget.size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: widget.color, width: 1, style: BorderStyle.solid),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: widget.color, width: 1.5, style: BorderStyle.solid),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              child: Container(
+                width: widget.size * 0.16,
+                height: widget.size * 0.16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.color,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
