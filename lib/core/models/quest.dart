@@ -37,6 +37,8 @@ class Quest {
   final double? progress;
   final String? dueLabel;
   final DateTime? completedAt;
+  final DateTime? createdAt;
+  final bool isDailyChallenge;
 
   const Quest({
     required this.id,
@@ -50,6 +52,8 @@ class Quest {
     this.progress,
     this.dueLabel,
     this.completedAt,
+    this.createdAt,
+    this.isDailyChallenge = false,
   });
 
   factory Quest.fromJson(Map<String, dynamic> json) {
@@ -67,6 +71,10 @@ class Quest {
       completedAt: json['completed_at'] == null
           ? null
           : DateTime.parse(json['completed_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      isDailyChallenge: json['is_daily_challenge'] as bool? ?? false,
     );
   }
 
@@ -83,6 +91,8 @@ class Quest {
       progress: progress ?? this.progress,
       dueLabel: dueLabel,
       completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt,
+      isDailyChallenge: isDailyChallenge,
     );
   }
 }

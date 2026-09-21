@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/quest.dart';
+import '../data/daily_quest_templates.dart';
 
 class QuestNotifier extends StateNotifier<List<Quest>> {
   QuestNotifier() : super(const []) {
@@ -9,6 +12,16 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
   }
 
   final SupabaseClient _client = Supabase.instance.client;
+  final Random _random = Random();
+
+  DateTime _currentQuestDayStart() {
+    final now = DateTime.now();
+    final todayReset = DateTime(now.year, now.month, now.day, 5, 30);
+    if (now.isBefore(todayReset)) {
+      return todayReset.subtract(const Duration(days: 1));
+    }
+    return todayReset;
+  }
 
   Future<void> loadQuests() async {
     final user = _client.auth.currentUser;
@@ -32,14 +45,56 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
           ),
         )
         .toList();
+
+    await _ensureTodaysDailyChallenges(user.id);
+  }
+
+  Future<void> _ensureTodaysDailyChallenges(String userId) async {
+    final dayStart = _currentQuestDayStart();
+
+    final alreadyGenerated = state.any(
+      (q) => q.isDailyChallenge && q.createdAt != null && !q.createdAt!.isBefore(dayStart),
+    );
+
+    if (alreadyGenerated) return;
+
+    final count = 3 + _random.nextInt(4); // 3 to 6 inclusive
+    final shuffled = List<DailyQuestTemplate>.from(dailyQuestTemplates)..shuffle(_random);
+    final chosen = shuffled.take(count).toList();
+
+    final rowsToInsert = chosen
+        .map((template) => {
+              'user_id': userId,
+              'title': template.title,
+              'xp': template.xp,
+              'category': template.category.name,
+              'period': QuestPeriod.daily.name,
+              'is_daily_challenge': true,
+            })
+        .toList();
+
+    final insertedRows = await _client
+        .from('quests')
+        .insert(rowsToInsert)
+        .select();
+
+    final insertedQuests = (insertedRows as List<dynamic>)
+        .map((row) => Quest.fromJson(Map<String, dynamic>.from(row as Map)))
+        .toList();
+
+    state = [...state, ...insertedQuests];
   }
 
   Future<void> toggleComplete(String questId) async {
     final quest = state.firstWhere((item) => item.id == questId);
+    final newCompleted = !quest.completed;
 
     final updatedRow = await _client
         .from('quests')
-        .update({'completed': !quest.completed})
+        .update({
+          'completed': newCompleted,
+          'completed_at': newCompleted ? DateTime.now().toIso8601String() : null,
+        })
         .eq('id', questId)
         .select()
         .single();
@@ -66,12 +121,14 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
       throw StateError('You must be signed in to create a quest.');
     }
 
+    final cappedXp = xp > 50 ? 50 : xp;
+
     final createdRow = await _client
         .from('quests')
         .insert({
           'user_id': user.id,
           'title': title,
-          'xp': xp,
+          'xp': cappedXp,
           'category': category.name,
           'period': period.name,
         })
