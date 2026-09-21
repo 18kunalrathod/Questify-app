@@ -141,12 +141,12 @@ int _totalXp(WidgetRef ref) =>
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, size: 20),
-                            onPressed: () => setSheetState(() => xp = (xp - 10).clamp(10, 500)),
+                            onPressed: () => setSheetState(() => xp = (xp - 10).clamp(10, 50)),
                           ),
                           SizedBox(width: 40, child: Text('$xp', textAlign: TextAlign.center, style: AppTextStyles.stat(context, size: 15))),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, size: 20),
-                            onPressed: () => setSheetState(() => xp = (xp + 10).clamp(10, 500)),
+                            onPressed: () => setSheetState(() => xp = (xp + 10).clamp(10, 50)),
                           ),
                         ],
                       ),
