@@ -36,6 +36,7 @@ class Quest {
   final bool completed;
   final double? progress;
   final String? dueLabel;
+  final DateTime? completedAt;
 
   const Quest({
     required this.id,
@@ -48,6 +49,7 @@ class Quest {
     this.completed = false,
     this.progress,
     this.dueLabel,
+    this.completedAt,
   });
 
   factory Quest.fromJson(Map<String, dynamic> json) {
@@ -62,10 +64,13 @@ class Quest {
       completed: json['completed'] as bool,
       progress: (json['progress'] as num?)?.toDouble(),
       dueLabel: json['due_label'] as String?,
+      completedAt: json['completed_at'] == null
+          ? null
+          : DateTime.parse(json['completed_at'] as String),
     );
   }
 
-  Quest copyWith({bool? completed, double? progress}) {
+  Quest copyWith({bool? completed, double? progress, DateTime? completedAt}) {
     return Quest(
       id: id,
       title: title,
@@ -77,6 +82,7 @@ class Quest {
       completed: completed ?? this.completed,
       progress: progress ?? this.progress,
       dueLabel: dueLabel,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 }

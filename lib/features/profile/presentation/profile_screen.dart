@@ -3,6 +3,8 @@ import '../../../shared/widgets/fade_through_route.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/quest.dart';
+import '../../../core/utils/attribute_scores.dart';
 import '../../achievements/presentation/achievements_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../ledger/presentation/ledger_screen.dart';
@@ -10,51 +12,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../../core/utils/leveling.dart';
 
-enum AttributeTrend { up, down, flat }
-
-class Attribute {
-  final String label;
-  final AppIcon icon;
-  final int score;
-  final AttributeTrend trend;
-
-  const Attribute({
-    required this.label,
-    required this.icon,
-    required this.score,
-    required this.trend,
-  });
+String _relativeTime(DateTime date) {
+  final difference = DateTime.now().difference(date);
+  if (difference.inMinutes < 1) return 'Just now';
+  if (difference.inHours < 1) return '${difference.inMinutes} min ago';
+  if (difference.inHours < 24) return '${difference.inHours} hours ago';
+  if (difference.inDays == 1) return 'Yesterday';
+  return '${difference.inDays} days ago';
 }
-
-const _attributes = [
-  Attribute(label: 'Wisdom', icon: AppIcon.document, score: 65, trend: AttributeTrend.up),
-  Attribute(label: 'Strength', icon: AppIcon.streak, score: 58, trend: AttributeTrend.up),
-  Attribute(label: 'Discipline', icon: AppIcon.focus, score: 72, trend: AttributeTrend.up),
-  Attribute(label: 'Balance', icon: AppIcon.checklist, score: 44, trend: AttributeTrend.down),
-  Attribute(label: 'Consistency', icon: AppIcon.quest, score: 60, trend: AttributeTrend.flat),
-];
-
-class CompletedQuest {
-  final String title;
-  final AppIcon icon;
-  final int xp;
-  final String whenLabel;
-
-  const CompletedQuest({
-    required this.title,
-    required this.icon,
-    required this.xp,
-    required this.whenLabel,
-  });
-}
-
-const _recentCompletions = [
-  CompletedQuest(title: 'Morning workout', icon: AppIcon.streak, xp: 50, whenLabel: 'Today'),
-  CompletedQuest(title: '4 gym sessions this week', icon: AppIcon.streak, xp: 150, whenLabel: 'Today'),
-  CompletedQuest(title: 'Flutter deep work', icon: AppIcon.quest, xp: 80, whenLabel: 'Yesterday'),
-  CompletedQuest(title: 'Read 20 pages', icon: AppIcon.document, xp: 30, whenLabel: '2 days ago'),
-  CompletedQuest(title: 'Evening walk', icon: AppIcon.checklist, xp: 20, whenLabel: '3 days ago'),
-];
 
 class LevelTier {
   final String name;
@@ -91,10 +56,26 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
-final totalXp = ref.watch(questProvider).where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
-final currentLevel = Leveling.levelForXp(totalXp);
-final xpIntoLevel = Leveling.xpIntoCurrentLevel(totalXp);
-final tier = LevelTier.forLevel(currentLevel);
+    final allQuests = ref.watch(questProvider);
+    final totalXp = allQuests.where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
+    final currentLevel = Leveling.levelForXp(totalXp);
+    final xpIntoLevel = Leveling.xpIntoCurrentLevel(totalXp);
+    final tier = LevelTier.forLevel(currentLevel);
+    final scores = AttributeScores.fromQuests(allQuests);
+
+    final attributeRows = [
+      (label: 'Wisdom', icon: AppIcon.document, score: scores.wisdom),
+      (label: 'Strength', icon: AppIcon.streak, score: scores.strength),
+      (label: 'Discipline', icon: AppIcon.focus, score: scores.discipline),
+      (label: 'Balance', icon: AppIcon.checklist, score: scores.balance),
+      (label: 'Consistency', icon: AppIcon.quest, score: scores.consistency),
+    ];
+
+    final recentCompletions = allQuests
+        .where((q) => q.completed && q.completedAt != null)
+        .toList()
+      ..sort((a, b) => b.completedAt!.compareTo(a.completedAt!));
+    final displayedCompletions = recentCompletions.take(5).toList();
 
     return Scaffold(
       body: AmbientGlowBackground(
@@ -191,9 +172,28 @@ final tier = LevelTier.forLevel(currentLevel);
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
                 child: Column(
-                  children: _attributes.asMap().entries.map((entry) {
-                    final isLast = entry.key == _attributes.length - 1;
-                    return _AttributeRow(attribute: entry.value, showDivider: !isLast, mutedColor: mutedColor);
+                  children: attributeRows.asMap().entries.map((entry) {
+                    final isLast = entry.key == attributeRows.length - 1;
+                    final row = entry.value;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      decoration: BoxDecoration(
+                        border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              AppIconWidget(icon: row.icon, size: 15, color: mutedColor!),
+                              const SizedBox(width: 8),
+                              Text(row.label, style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                          Text('${row.score}', style: AppTextStyles.stat(context, size: 13)),
+                        ],
+                      ),
+                    );
                   }).toList(),
                 ),
               ),
@@ -205,38 +205,46 @@ final tier = LevelTier.forLevel(currentLevel);
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-                child: Column(
-                  children: _recentCompletions.asMap().entries.map((entry) {
-                    final isLast = entry.key == _recentCompletions.length - 1;
-                    final quest = entry.value;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06)))),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
-                            child: Center(child: AppIconWidget(icon: quest.icon, size: 14, color: mutedColor!)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                child: displayedCompletions.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          'No completions yet.',
+                          style: TextStyle(fontSize: 12, color: mutedColor),
+                        ),
+                      )
+                    : Column(
+                        children: displayedCompletions.asMap().entries.map((entry) {
+                          final isLast = entry.key == displayedCompletions.length - 1;
+                          final quest = entry.value;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06)))),
+                            child: Row(
                               children: [
-                                Text(quest.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                                const SizedBox(height: 2),
-                                Text(quest.whenLabel, style: TextStyle(fontSize: 10, color: mutedColor)),
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
+                                  child: Center(child: AppIconWidget(icon: quest.category.icon, size: 14, color: mutedColor!)),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(quest.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 2),
+                                      Text(_relativeTime(quest.completedAt!), style: TextStyle(fontSize: 10, color: mutedColor)),
+                                    ],
+                                  ),
+                                ),
+                                Text('+${quest.xp} XP', style: AppTextStyles.stat(context, size: 11, color: mutedColor)),
                               ],
                             ),
-                          ),
-                          Text('+${quest.xp} XP', style: AppTextStyles.stat(context, size: 11, color: mutedColor)),
-                        ],
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
-                ),
               ),
 
               const SizedBox(height: 20),
@@ -285,52 +293,6 @@ final tier = LevelTier.forLevel(currentLevel);
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _AttributeRow extends StatelessWidget {
-  final Attribute attribute;
-  final bool showDivider;
-  final Color? mutedColor;
-
-  const _AttributeRow({required this.attribute, required this.showDivider, required this.mutedColor});
-
-  @override
-  Widget build(BuildContext context) {
-    final trendIcon = switch (attribute.trend) {
-      AttributeTrend.up => Icons.arrow_upward,
-      AttributeTrend.down => Icons.arrow_downward,
-      AttributeTrend.flat => Icons.remove,
-    };
-    final trendColor = switch (attribute.trend) {
-      AttributeTrend.up => const Color(0xFF7FBF7F),
-      AttributeTrend.down => const Color(0xFFC97F7F),
-      AttributeTrend.flat => mutedColor,
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 11),
-      decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              AppIconWidget(icon: attribute.icon, size: 15, color: mutedColor!),
-              const SizedBox(width: 8),
-              Text(attribute.label, style: const TextStyle(fontSize: 12)),
-            ],
-          ),
-          Row(
-            children: [
-              Text('${attribute.score}', style: AppTextStyles.stat(context, size: 13)),
-              const SizedBox(width: 4),
-              Icon(trendIcon, size: 12, color: trendColor),
-            ],
-          ),
-        ],
       ),
     );
   }
