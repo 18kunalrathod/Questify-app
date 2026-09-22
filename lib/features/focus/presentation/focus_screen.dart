@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 
@@ -9,14 +10,15 @@ enum SessionType { focus, breakTime, rest }
 class AmbientSound {
   final String label;
   final IconData icon;
-  const AmbientSound({required this.label, required this.icon});
+  final String? assetPath;
+  const AmbientSound({required this.label, required this.icon, this.assetPath});
 }
 
 const _ambientSounds = [
-  AmbientSound(label: 'Silence', icon: Icons.volume_off_outlined),
-  AmbientSound(label: 'Rain', icon: Icons.water_drop_outlined),
-  AmbientSound(label: 'Forest', icon: Icons.forest_outlined),
-  AmbientSound(label: 'White Noise', icon: Icons.graphic_eq),
+  AmbientSound(label: 'Silence', icon: Icons.volume_off_outlined, assetPath: null),
+  AmbientSound(label: 'Rain', icon: Icons.water_drop_outlined, assetPath: 'assets/sounds/rain.mp3'),
+  AmbientSound(label: 'Forest', icon: Icons.forest_outlined, assetPath: 'assets/sounds/forest.mp3'),
+  AmbientSound(label: 'White Noise', icon: Icons.graphic_eq, assetPath: 'assets/sounds/white_noise.mp3'),
 ];
 
 const _focusPresets = [15, 25, 45, 60];
@@ -41,32 +43,63 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
   Timer? _countdownTimer;
   String _selectedSound = 'Silence';
 
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   late final AnimationController _rotateController;
 
   @override
   void initState() {
     super.initState();
     _rotateController = AnimationController(vsync: this, duration: const Duration(seconds: 24))..repeat();
+    _audioPlayer.setLoopMode(LoopMode.one);
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
     _rotateController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _startAmbientSound() async {
+    final sound = _ambientSounds.firstWhere((s) => s.label == _selectedSound);
+    if (sound.assetPath == null) return;
+
+    try {
+      await _audioPlayer.setAsset(sound.assetPath!);
+      await _audioPlayer.play();
+    } catch (e) {
+      debugPrint('Failed to play ambient sound: $e');
+    }
+  }
+
+  Future<void> _stopAmbientSound() async {
+    await _audioPlayer.stop();
+  }
+
+  Future<void> _switchAmbientSound(String label) async {
+    setState(() => _selectedSound = label);
+    if (_isRunning) {
+      await _stopAmbientSound();
+      await _startAmbientSound();
+    }
   }
 
   void _toggleTimer() {
     if (_isRunning) {
       _countdownTimer?.cancel();
+      _stopAmbientSound();
       setState(() => _isRunning = false);
       return;
     }
 
     setState(() => _isRunning = true);
+    _startAmbientSound();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remaining.inSeconds <= 1) {
         timer.cancel();
+        _stopAmbientSound();
         setState(() {
           _isRunning = false;
           _remaining = Duration.zero;
@@ -79,6 +112,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
 
   void _resetTimer() {
     _countdownTimer?.cancel();
+    _stopAmbientSound();
     setState(() {
       _isRunning = false;
       _totalDuration = Duration(minutes: _focusMinutes);
@@ -204,7 +238,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
                     final sound = _ambientSounds[index];
                     final isSelected = _selectedSound == sound.label;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedSound = sound.label),
+                      onTap: () => _switchAmbientSound(sound.label),
                       child: Container(
                         width: 68,
                         decoration: BoxDecoration(

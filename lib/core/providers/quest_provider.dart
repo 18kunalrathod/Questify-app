@@ -142,6 +142,11 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
     state = [...state, createdQuest];
   }
 
+  Future<void> deleteQuest(String questId) async {
+    await _client.from('quests').delete().eq('id', questId);
+    state = state.where((quest) => quest.id != questId).toList();
+  }
+
   List<Quest> forPeriod(QuestPeriod period) {
     return state.where((quest) => quest.period == period).toList();
   }

@@ -46,6 +46,38 @@ int _totalXp(WidgetRef ref) =>
     return source.where((q) => q.category == _selectedCategory).toList();
   }
 
+  Future<bool> _confirmDelete(Quest quest) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete quest?'),
+        content: Text('"${quest.title}" will be permanently deleted.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
+  Future<void> _deleteQuest(Quest quest) async {
+    try {
+      await ref.read(questProvider.notifier).deleteQuest(quest.id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not delete this quest. Please try again.')),
+      );
+    }
+  }
+
   Future<void> _showCreateQuestSheet() async {
     final titleController = TextEditingController();
     QuestCategory selectedCategory = QuestCategory.personal;
@@ -323,9 +355,24 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                       final card = quest.progress != null
                           ? _GoalQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor)
                           : _SimpleQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor);
-                      return GestureDetector(
-                        onTap: () => ref.read(questProvider.notifier).toggleComplete(quest.id),
-                        child: card,
+                      return Dismissible(
+                        key: ValueKey(quest.id),
+                        direction: DismissDirection.endToStart,
+                        confirmDismiss: (_) => _confirmDelete(quest),
+                        onDismissed: (_) => _deleteQuest(quest),
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        ),
+                        child: GestureDetector(
+                          onTap: () => ref.read(questProvider.notifier).toggleComplete(quest.id),
+                          child: card,
+                        ),
                       );
                     },
                   );

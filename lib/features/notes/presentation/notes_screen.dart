@@ -46,6 +46,38 @@ class _NotesTabState extends ConsumerState<NotesTab> {
     }
   }
 
+  Future<bool> _confirmDelete(Note note) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete note?'),
+        content: Text('"${note.title}" will be permanently deleted.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
+  Future<void> _deleteNote(Note note) async {
+    try {
+      await ref.read(noteProvider.notifier).deleteNote(note.id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not delete this note. Please try again.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
@@ -109,72 +141,88 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                           final note = filteredNotes[index];
                           final categoryColor = note.category.accentColor;
 
-                          return GestureDetector(
-                            onTap: () => _openNote(note),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
+                          return Dismissible(
+                            key: ValueKey(note.id),
+                            direction: DismissDirection.endToStart,
+                            confirmDismiss: (_) => _confirmDelete(note),
+                            onDismissed: (_) => _deleteNote(note),
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              margin: EdgeInsets.zero,
                               decoration: BoxDecoration(
-                                color: cardColor,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.06),
-                                ),
+                                color: Colors.redAccent.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 38,
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      color: categoryColor.withOpacity(0.12),
-                                      borderRadius:
-                                          BorderRadius.circular(11),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      note.category.icon,
-                                      size: 18,
-                                      color: categoryColor,
-                                    ),
+                              child: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                            ),
+                            child: GestureDetector(
+                              onTap: () => _openNote(note),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.06),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          note.title,
-                                          style: AppTextStyles.headline(
-                                            context,
-                                            size: 14,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          note.preview,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: mutedColor,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          _relativeTime(note.updatedAt),
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: mutedColor?.withOpacity(0.7),
-                                          ),
-                                        ),
-                                      ],
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: categoryColor.withOpacity(0.12),
+                                        borderRadius:
+                                            BorderRadius.circular(11),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        note.category.icon,
+                                        size: 18,
+                                        color: categoryColor,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            note.title,
+                                            style: AppTextStyles.headline(
+                                              context,
+                                              size: 14,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            note.preview,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: mutedColor,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            _relativeTime(note.updatedAt),
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: mutedColor?.withOpacity(0.7),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
