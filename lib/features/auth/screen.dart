@@ -116,7 +116,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         child: child,
                       );
                     },
-                    child: _RingOutline(size: 190, color: accent.withOpacity(0.3), dashed: true),
+                    child: _RingOutline(size: 190, color: accent.withValues(alpha: 0.3), dashed: true),
                   ),
                   AnimatedBuilder(
                     animation: _pulseController,
@@ -148,7 +148,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: accent.withOpacity(0.12),
+                      color: accent.withValues(alpha: 0.12),
                     ),
                   ),
                   Positioned(
@@ -181,9 +181,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: cardColor.withOpacity(0.55),
+                      color: cardColor.withValues(alpha: 0.55),
                       border: Border(
-                        top: BorderSide(color: Colors.white.withOpacity(0.08)),
+                        top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
                       ),
                     ),
                     child: SingleChildScrollView(
@@ -206,7 +206,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Row(
@@ -278,12 +278,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           const SizedBox(height: 22),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                              Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: Text('or continue with', style: TextStyle(color: mutedColor, fontSize: 12)),
                               ),
-                              Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                              Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
                             ],
                           ),
                           const SizedBox(height: 18),
@@ -402,8 +402,8 @@ class _GlassField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
@@ -436,7 +436,7 @@ class _AltAuthButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
         ),
         child: Row(

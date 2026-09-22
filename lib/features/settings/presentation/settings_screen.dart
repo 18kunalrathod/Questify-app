@@ -119,7 +119,7 @@ class _SwitchRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontSize: 13)),
-          Switch(value: value, onChanged: onChanged, activeColor: accent),
+          Switch(value: value, onChanged: onChanged, activeThumbColor: accent),
         ],
       ),
     );

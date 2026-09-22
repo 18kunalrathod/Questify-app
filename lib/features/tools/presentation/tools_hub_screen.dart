@@ -32,7 +32,7 @@ class ToolsHubScreen extends StatelessWidget {
         child: ListView.separated(
           padding: const EdgeInsets.all(20),
           itemCount: tools.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final tool = tools[index];
             return GestureDetector(

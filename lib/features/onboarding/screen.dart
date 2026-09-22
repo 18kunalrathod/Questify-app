@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../dashboard/presentation/dashboard_placeholder.dart';
+
 import '../../shared/widgets/fade_through_route.dart';
 import 'package:questify/features/auth/screen.dart';
 import '../../core/theme/app_theme.dart';

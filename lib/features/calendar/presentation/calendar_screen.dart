@@ -162,7 +162,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                      decoration: BoxDecoration(border: Border.all(color: Colors.white.withOpacity(0.15)), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.white.withValues(alpha: 0.15)), borderRadius: BorderRadius.circular(10)),
                       child: Row(
                         children: [
                           const Icon(Icons.access_time, size: 18),
@@ -454,7 +454,7 @@ class _EventTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: event.isQuestDeadline ? accent.withOpacity(0.1) : cardColor,
+          color: event.isQuestDeadline ? accent.withValues(alpha: 0.1) : cardColor,
           border: event.isQuestDeadline ? Border.all(color: accent) : null,
           borderRadius: BorderRadius.circular(12),
         ),

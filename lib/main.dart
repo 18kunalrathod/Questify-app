@@ -17,7 +17,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://lhahpoiiygszzqjsljlu.supabase.co',
-    anonKey: 'sb_publishable_6FgOUPg4AGKMUpPdVp0vBA_sX3G39Ms',
+    publishableKey: 'sb_publishable_6FgOUPg4AGKMUpPdVp0vBA_sX3G39Ms',
   );
   runApp(const ProviderScope(child: QuestifyApp()));
 }
@@ -41,21 +41,5 @@ class QuestifyApp extends ConsumerWidget {
   supportedLocales: quill.FlutterQuillLocalizations.supportedLocales,
   home: hasSession ? const AppShell() : const SplashScreen(),
 );
-  }
-}
-
-class _TempHomePlaceholder extends StatelessWidget {
-  const _TempHomePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          'Questify',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
-    );
   }
 }

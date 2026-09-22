@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../tools/presentation/tools_hub_screen.dart';
 import '../../calendar/presentation/calendar_screen.dart';
-import '../../notes/presentation/notes_screen.dart';
+
 import '../../analytics/presentation/analytics_screen.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';

@@ -206,7 +206,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                               margin: const EdgeInsets.symmetric(horizontal: 3),
                               height: 50 * barHeight,
                               decoration: BoxDecoration(
-                                color: accent.withOpacity(0.25 + (barHeight * 0.5)),
+                                color: accent.withValues(alpha: 0.25 + (barHeight * 0.5)),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -259,7 +259,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                           child: LinearProgressIndicator(
                             value: count / maxCategoryCount,
                             minHeight: 5,
-                            backgroundColor: Colors.white.withOpacity(0.06),
+                            backgroundColor: Colors.white.withValues(alpha: 0.06),
                             color: accent,
                           ),
                         ),

@@ -50,7 +50,7 @@ cardTheme: CardThemeData(
   margin: EdgeInsets.zero,
   shape: RoundedRectangleBorder(
     borderRadius: const BorderRadius.all(Radius.circular(16)),
-    side: BorderSide(color: Colors.white.withOpacity(0.05)),
+    side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
   ),
 ),
     );
@@ -131,10 +131,10 @@ BoxDecoration specularCardDecoration(BuildContext context) {
     color: Theme.of(context).cardTheme.color,
     borderRadius: BorderRadius.circular(16),
     border: Border(
-      top: BorderSide(color: Colors.white.withOpacity(0.14)),
-      left: BorderSide(color: Colors.white.withOpacity(0.08)),
-      right: BorderSide(color: Colors.white.withOpacity(0.02)),
-      bottom: BorderSide(color: Colors.white.withOpacity(0.02)),
+      top: BorderSide(color: Colors.white.withValues(alpha: 0.14)),
+      left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+      right: BorderSide(color: Colors.white.withValues(alpha: 0.02)),
+      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.02)),
     ),
   );
 }

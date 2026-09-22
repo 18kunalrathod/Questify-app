@@ -136,7 +136,7 @@ class _AchievementBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = !achievement.unlocked;
     final tier = achievement.tier;
-    final badgeColor = locked ? Colors.white.withOpacity(0.08) : accent;
+    final badgeColor = locked ? Colors.white.withValues(alpha: 0.08) : accent;
     final size = locked ? 56.0 : tier.size;
 
     return GestureDetector(
@@ -147,14 +147,14 @@ class _AchievementBadge extends StatelessWidget {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: locked ? Theme.of(context).cardTheme.color : accent.withOpacity(0.08),
+              color: locked ? Theme.of(context).cardTheme.color : accent.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: badgeColor.withOpacity(locked ? 1 : 0.35 + (tier.glowOpacity)), width: locked ? 1.5 : tier.borderWidth),
-              boxShadow: (!locked && tier.glowOpacity > 0) ? [BoxShadow(color: accent.withOpacity(tier.glowOpacity), blurRadius: 12, spreadRadius: 2)] : null,
+              border: Border.all(color: badgeColor.withValues(alpha: locked ? 1 : 0.35 + (tier.glowOpacity)), width: locked ? 1.5 : tier.borderWidth),
+              boxShadow: (!locked && tier.glowOpacity > 0) ? [BoxShadow(color: accent.withValues(alpha: tier.glowOpacity), blurRadius: 12, spreadRadius: 2)] : null,
             ),
             alignment: Alignment.center,
             child: locked
-                ? Icon(Icons.lock_outline, size: 18, color: Colors.white.withOpacity(0.25))
+                ? Icon(Icons.lock_outline, size: 18, color: Colors.white.withValues(alpha: 0.25))
                 : AppIconWidget(icon: achievement.icon, size: 20, color: accent),
           ),
           const SizedBox(height: 6),
@@ -163,7 +163,7 @@ class _AchievementBadge extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 8, fontWeight: locked ? FontWeight.w500 : FontWeight.w700, color: locked ? Colors.white.withOpacity(0.25) : accent),
+            style: TextStyle(fontSize: 8, fontWeight: locked ? FontWeight.w500 : FontWeight.w700, color: locked ? Colors.white.withValues(alpha: 0.25) : accent),
           ),
         ],
       ),

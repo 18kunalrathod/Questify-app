@@ -233,7 +233,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _ambientSounds.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, index) {
                     final sound = _ambientSounds[index];
                     final isSelected = _selectedSound == sound.label;

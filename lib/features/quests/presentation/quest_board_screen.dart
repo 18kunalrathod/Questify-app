@@ -349,7 +349,7 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                     itemCount: quests.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final quest = quests[index];
                       final card = quest.progress != null

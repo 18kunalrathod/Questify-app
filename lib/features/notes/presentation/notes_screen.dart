@@ -135,7 +135,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 90),
                         itemCount: filteredNotes.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final note = filteredNotes[index];
