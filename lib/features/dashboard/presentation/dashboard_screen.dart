@@ -67,9 +67,9 @@ class DashboardScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  border: Border.all(color: accent.withOpacity(0.15)),
+                  border: Border.all(color: accent.withValues(alpha: 0.15)),
                   borderRadius: BorderRadius.circular(20),
-                  color: cardColor?.withOpacity(0.4),
+                  color: cardColor?.withValues(alpha: 0.4),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +91,7 @@ class DashboardScreen extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: completedCount / _quests.length,
                           minHeight: 3,
-                          backgroundColor: Colors.white.withOpacity(0.08),
+                          backgroundColor: Colors.white.withValues(alpha: 0.08),
                           color: accent,
                         ),
                       ),
@@ -158,7 +158,7 @@ class DashboardScreen extends StatelessWidget {
                                 margin: const EdgeInsets.symmetric(horizontal: 2),
                                 height: 44 * barHeight,
                                 decoration: BoxDecoration(
-                                  color: accent.withOpacity(0.25 + (barHeight * 0.5)),
+                                  color: accent.withValues(alpha: 0.25 + (barHeight * 0.5)),
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),

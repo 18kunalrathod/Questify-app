@@ -19,7 +19,7 @@ class _DocumentsTabState extends ConsumerState<DocumentsTab> {
 
   Future<void> _uploadDocument() async {
     final result = await FilePicker.pickFiles(allowMultiple: false);
-    if (result == null || result.single.path == null) return;
+    if (result.isEmpty) return;
 
     final localPath = result.single.path!;
     final fileName = result.single.name;

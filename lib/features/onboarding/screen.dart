@@ -152,7 +152,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: isActive ? 20 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: isActive ? accent : accent.withOpacity(0.2),
+                    color: isActive ? accent : accent.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(99),
                   ),
                 );

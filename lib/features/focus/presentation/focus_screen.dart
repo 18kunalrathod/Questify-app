@@ -176,12 +176,12 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
                       child: Container(
                         width: 220,
                         height: 220,
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: accent.withOpacity(0.15), width: 1)),
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: accent.withValues(alpha: 0.15), width: 1)),
                       ),
                     ),
                     CustomPaint(
                       size: const Size(190, 190),
-                      painter: _ProgressRingPainter(progress: progress, color: accent, trackColor: Colors.white.withOpacity(0.06)),
+                      painter: _ProgressRingPainter(progress: progress, color: accent, trackColor: Colors.white.withValues(alpha: 0.06)),
                     ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
@@ -242,7 +242,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
                       child: Container(
                         width: 68,
                         decoration: BoxDecoration(
-                          color: isSelected ? accent.withOpacity(0.12) : cardColor,
+                          color: isSelected ? accent.withValues(alpha: 0.12) : cardColor,
                           border: Border.all(color: isSelected ? accent : Colors.transparent, width: 1.5),
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -327,7 +327,7 @@ class _CircleControlButton extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(shape: BoxShape.circle, color: isPrimary ? accent : cardColor),
-        child: Icon(icon, size: isPrimary ? 28 : 20, color: isPrimary ? Colors.black.withOpacity(0.8) : mutedColor),
+        child: Icon(icon, size: isPrimary ? 28 : 20, color: isPrimary ? Colors.black.withValues(alpha: 0.8) : mutedColor),
       ),
     );
   }
@@ -348,7 +348,7 @@ class _SettingRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 13),
-        decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))) : null),
+        decoration: BoxDecoration(border: showDivider ? Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))) : null),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

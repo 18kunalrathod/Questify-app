@@ -103,7 +103,7 @@ class ProfileScreen extends ConsumerWidget {
                         color: cardColor,
                         border: Border.all(color: tier.color, width: tier.borderWidth),
                         boxShadow: tier.glowOpacity > 0
-                            ? [BoxShadow(color: tier.color.withOpacity(tier.glowOpacity), blurRadius: 16, spreadRadius: 2)]
+                            ? [BoxShadow(color: tier.color.withValues(alpha: tier.glowOpacity), blurRadius: 16, spreadRadius: 2)]
                             : null,
                       ),
                       alignment: Alignment.center,
@@ -122,9 +122,9 @@ class ProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: tier.color.withOpacity(0.2)),
+                  border: Border.all(color: tier.color.withValues(alpha: 0.2)),
                   borderRadius: BorderRadius.circular(18),
-                  color: cardColor?.withOpacity(0.4),
+                  color: cardColor?.withValues(alpha: 0.4),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,8 +135,8 @@ class ProfileScreen extends ConsumerWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: tier.color.withOpacity(0.12),
-                            border: Border.all(color: tier.color.withOpacity(0.3)),
+                            color: tier.color.withValues(alpha: 0.12),
+                            border: Border.all(color: tier.color.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           alignment: Alignment.center,
@@ -152,7 +152,7 @@ class ProfileScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(99),
                               child: SizedBox(
                                 width: 90,
-                                child: LinearProgressIndicator(value: xpIntoLevel / Leveling.xpForNextLevel, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.08), color: tier.color),
+                                child: LinearProgressIndicator(value: xpIntoLevel / Leveling.xpForNextLevel, minHeight: 4, backgroundColor: Colors.white.withValues(alpha: 0.08), color: tier.color),
                               ),
                             ),
                           ],
@@ -178,7 +178,7 @@ class ProfileScreen extends ConsumerWidget {
                     return Container(
                       padding: const EdgeInsets.symmetric(vertical: 11),
                       decoration: BoxDecoration(
-                        border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
+                        border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,13 +219,13 @@ class ProfileScreen extends ConsumerWidget {
                           final quest = entry.value;
                           return Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06)))),
+                            decoration: BoxDecoration(border: isLast ? null : Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)))),
                             child: Row(
                               children: [
                                 Container(
                                   width: 32,
                                   height: 32,
-                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
+                                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(10)),
                                   child: Center(child: AppIconWidget(icon: quest.category.icon, size: 14, color: mutedColor!)),
                                 ),
                                 const SizedBox(width: 10),

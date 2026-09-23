@@ -53,7 +53,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
     final categoryColor = _category.accentColor;
@@ -76,7 +75,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: categoryColor.withOpacity(0.12),
+                      color: categoryColor.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -115,7 +114,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                 color: isSelected ? chipColor : cardColor,
                                 border: isSelected
                                     ? null
-                                    : Border.all(color: Colors.white.withOpacity(0.08)),
+                                    : Border.all(color: Colors.white.withValues(alpha: 0.08)),
                                 borderRadius: BorderRadius.circular(99),
                               ),
                               alignment: Alignment.center,
@@ -172,6 +171,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     showUnderLineButton: false,
                     showItalicButton: false,
                     showBoldButton: false,
+                    
                     showListNumbers: false,
                     showSearchButton: false,
                     showCodeBlock: false,

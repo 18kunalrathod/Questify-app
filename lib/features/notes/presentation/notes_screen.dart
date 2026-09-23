@@ -151,7 +151,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                               padding: const EdgeInsets.symmetric(horizontal: 20),
                               margin: EdgeInsets.zero,
                               decoration: BoxDecoration(
-                                color: Colors.redAccent.withOpacity(0.15),
+                                color: Colors.redAccent.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -163,7 +163,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                                 decoration: BoxDecoration(
                                   color: cardColor,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.06),
+                                    color: Colors.white.withValues(alpha: 0.06),
                                   ),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
@@ -174,7 +174,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                                       width: 38,
                                       height: 38,
                                       decoration: BoxDecoration(
-                                        color: categoryColor.withOpacity(0.12),
+                                        color: categoryColor.withValues(alpha: 0.12),
                                         borderRadius:
                                             BorderRadius.circular(11),
                                       ),
@@ -215,7 +215,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                                             _relativeTime(note.updatedAt),
                                             style: TextStyle(
                                               fontSize: 10,
-                                              color: mutedColor?.withOpacity(0.7),
+                                              color: mutedColor?.withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -294,7 +294,7 @@ class _CategoryChip extends StatelessWidget {
             color: isSelected ? accent : Theme.of(context).cardTheme.color,
             border: isSelected
                 ? null
-                : Border.all(color: Colors.white.withOpacity(0.08)),
+                : Border.all(color: Colors.white.withValues(alpha: 0.08)),
             borderRadius: BorderRadius.circular(99),
           ),
           child: Text(

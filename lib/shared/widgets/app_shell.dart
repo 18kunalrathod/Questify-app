@@ -38,7 +38,7 @@ class _AppShellState extends State<AppShell> {
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) => setState(() => _currentIndex = index),
         backgroundColor: Theme.of(context).cardTheme.color,
-        indicatorColor: accent.withOpacity(0.15),
+        indicatorColor: accent.withValues(alpha: 0.15),
         destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined, color: mutedColor),

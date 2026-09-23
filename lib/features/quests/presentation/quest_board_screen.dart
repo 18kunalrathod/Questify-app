@@ -125,7 +125,7 @@ int _totalXp(WidgetRef ref) =>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? accent : Colors.white.withOpacity(0.05),
+                            color: isSelected ? accent : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: Text(
@@ -153,7 +153,7 @@ int _totalXp(WidgetRef ref) =>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? accent : Colors.white.withOpacity(0.05),
+                            color: isSelected ? accent : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: Text(
@@ -255,9 +255,9 @@ final tier = LevelTier.forLevel(currentLevel);
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: tier.color.withOpacity(0.2)),
+                    border: Border.all(color: tier.color.withValues(alpha: 0.2)),
                     borderRadius: BorderRadius.circular(18),
-                    color: cardColor?.withOpacity(0.4),
+                    color: cardColor?.withValues(alpha: 0.4),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -268,8 +268,8 @@ final tier = LevelTier.forLevel(currentLevel);
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: tier.color.withOpacity(0.12),
-                              border: Border.all(color: tier.color.withOpacity(0.3)),
+                              color: tier.color.withValues(alpha: 0.12),
+                              border: Border.all(color: tier.color.withValues(alpha: 0.3)),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             alignment: Alignment.center,
@@ -288,7 +288,7 @@ final tier = LevelTier.forLevel(currentLevel);
                                   child: LinearProgressIndicator(
                                     value: currentXp / Leveling.xpForNextLevel,
                                     minHeight: 4,
-                                    backgroundColor: Colors.white.withOpacity(0.08),
+                                    backgroundColor: Colors.white.withValues(alpha: 0.08),
                                     color: tier.color,
                                   ),
                                 ),
@@ -364,7 +364,7 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent.withOpacity(0.15),
+                            color: Colors.redAccent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -432,7 +432,7 @@ class _SimpleQuestCard extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: (quest.completed ? mutedColor : accent)!.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: (quest.completed ? mutedColor : accent)!.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
             child: Center(child: AppIconWidget(icon: quest.category.icon, size: 16, color: quest.completed ? mutedColor! : accent)),
           ),
           const SizedBox(width: 12),
@@ -483,12 +483,12 @@ class _GoalQuestCard extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tagColor.withOpacity(0.35), width: 1.5)),
+            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tagColor.withValues(alpha: 0.35), width: 1.5)),
             alignment: Alignment.center,
             child: Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: tagColor.withOpacity(0.1)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: tagColor.withValues(alpha: 0.1)),
               child: Center(child: AppIconWidget(icon: quest.category.icon, size: 16, color: tagColor)),
             ),
           ),
@@ -502,7 +502,7 @@ class _GoalQuestCard extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(color: tagColor.withOpacity(0.12), borderRadius: BorderRadius.circular(99)),
+                      decoration: BoxDecoration(color: tagColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(99)),
                       child: Text(isEpic ? 'EPIC' : 'COMMON', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: tagColor, letterSpacing: 0.5)),
                     ),
                     Text('+${quest.xp} XP', style: AppTextStyles.stat(context, size: 11, color: tagColor)),
@@ -517,7 +517,7 @@ class _GoalQuestCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(99),
-                  child: LinearProgressIndicator(value: quest.progress, minHeight: 5, backgroundColor: Colors.white.withOpacity(0.06), color: tagColor),
+                  child: LinearProgressIndicator(value: quest.progress, minHeight: 5, backgroundColor: Colors.white.withValues(alpha: 0.06), color: tagColor),
                 ),
                 const SizedBox(height: 6),
                 Text('${quest.dueLabel ?? ''} · ${((quest.progress ?? 0) * 100).round()}%', style: TextStyle(fontSize: 9, color: mutedColor)),

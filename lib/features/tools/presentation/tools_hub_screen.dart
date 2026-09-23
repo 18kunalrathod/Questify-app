@@ -45,7 +45,7 @@ class ToolsHubScreen extends StatelessWidget {
                     Container(
                       width: 38,
                       height: 38,
-                      decoration: BoxDecoration(color: accent.withOpacity(0.12), borderRadius: BorderRadius.circular(11)),
+                      decoration: BoxDecoration(color: accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
                       child: Icon(tool.icon, size: 17, color: accent),
                     ),
                     const SizedBox(width: 12),

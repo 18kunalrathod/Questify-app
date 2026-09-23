@@ -29,9 +29,9 @@ class AmbientGlowBackground extends StatelessWidget {
                   center: Alignment.center,
                   radius: 0.9,
                   colors: [
-                    AppColors.glowCore.withOpacity(strong ? 0.38 : 0.16),
-                    accent.withOpacity(strong ? 0.15 : 0.06),
-                    accent.withOpacity(0.03),
+                    AppColors.glowCore.withValues(alpha: strong ? 0.38 : 0.16),
+                    accent.withValues(alpha: strong ? 0.15 : 0.06),
+                    accent.withValues(alpha: 0.03),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.4, 0.65, 0.8],
