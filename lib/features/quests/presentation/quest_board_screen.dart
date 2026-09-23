@@ -34,14 +34,23 @@ int _totalXp(WidgetRef ref) =>
     super.dispose();
   }
 
-  List<Quest> _questsForCurrentTab() {
+  
+    List<Quest> _questsForCurrentTab() {
     final allQuests = ref.watch(questProvider);
     final period = switch (_tabController.index) {
       0 => QuestPeriod.daily,
       1 => QuestPeriod.weekly,
       _ => QuestPeriod.monthly,
     };
-    final source = allQuests.where((q) => q.period == period).toList();
+    var source = allQuests.where((q) => q.period == period).toList();
+
+    if (period == QuestPeriod.daily) {
+      final dayStart = QuestNotifier.currentQuestDayStart();
+      source = source
+          .where((q) => q.createdAt != null && !q.createdAt!.isBefore(dayStart))
+          .toList();
+    }
+
     if (_selectedCategory == null) return source;
     return source.where((q) => q.category == _selectedCategory).toList();
   }

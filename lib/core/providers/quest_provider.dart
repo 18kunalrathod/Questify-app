@@ -14,7 +14,7 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
   final SupabaseClient _client = Supabase.instance.client;
   final Random _random = Random();
 
-  DateTime _currentQuestDayStart() {
+  static DateTime currentQuestDayStart() {
     final now = DateTime.now();
     final todayReset = DateTime(now.year, now.month, now.day, 5, 30);
     if (now.isBefore(todayReset)) {
@@ -50,7 +50,7 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
   }
 
   Future<void> _ensureTodaysDailyChallenges(String userId) async {
-    final dayStart = _currentQuestDayStart();
+    final dayStart = currentQuestDayStart();
 
     final alreadyGenerated = state.any(
       (q) => q.isDailyChallenge && q.createdAt != null && !q.createdAt!.isBefore(dayStart),
