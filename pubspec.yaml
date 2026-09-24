@@ -58,6 +58,9 @@ dependencies:
   # Audio
   just_audio: ^0.10.4
 
+  # Deep linking (password reset)
+  app_links: ^6.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

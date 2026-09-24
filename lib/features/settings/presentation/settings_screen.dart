@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../main.dart' show themeModeProvider;
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -72,7 +73,14 @@ class SettingsScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     _NavRow(label: 'Change password', onTap: () {}, showDivider: true),
-                    _NavRow(label: 'Sign out', onTap: () {}, isDestructive: true, showDivider: false),
+                    _NavRow(
+                      label: 'Sign out',
+                      onTap: () async {
+                        await Supabase.instance.client.auth.signOut();
+                      },
+                      isDestructive: true,
+                      showDivider: false,
+                    ),
                   ],
                 ),
               ),
