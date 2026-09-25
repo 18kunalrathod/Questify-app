@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
+import '../../../shared/widgets/hint_bubble.dart';
 
 enum SessionType { focus, breakTime, rest }
 
@@ -228,36 +229,41 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
 
               Text('AMBIENT SOUND', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1)),
               const SizedBox(height: 10),
-              SizedBox(
-                height: 76,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _ambientSounds.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 10),
-                  itemBuilder: (context, index) {
-                    final sound = _ambientSounds[index];
-                    final isSelected = _selectedSound == sound.label;
-                    return GestureDetector(
-                      onTap: () => _switchAmbientSound(sound.label),
-                      child: Container(
-                        width: 68,
-                        decoration: BoxDecoration(
-                          color: isSelected ? accent.withValues(alpha: 0.12) : cardColor,
-                          border: Border.all(color: isSelected ? accent : Colors.transparent, width: 1.5),
-                          borderRadius: BorderRadius.circular(14),
+              HintBubble(
+                hintId: 'focus_sound_picker',
+                message: 'Tap a sound to play it during focus',
+                direction: AxisDirection.down,
+                child: SizedBox(
+                  height: 76,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _ambientSounds.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final sound = _ambientSounds[index];
+                      final isSelected = _selectedSound == sound.label;
+                      return GestureDetector(
+                        onTap: () => _switchAmbientSound(sound.label),
+                        child: Container(
+                          width: 68,
+                          decoration: BoxDecoration(
+                            color: isSelected ? accent.withValues(alpha: 0.12) : cardColor,
+                            border: Border.all(color: isSelected ? accent : Colors.transparent, width: 1.5),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(sound.icon, size: 18, color: isSelected ? accent : mutedColor),
+                              const SizedBox(height: 6),
+                              Text(sound.label, style: TextStyle(fontSize: 8, color: isSelected ? accent : mutedColor), textAlign: TextAlign.center),
+                            ],
+                          ),
                         ),
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(sound.icon, size: 18, color: isSelected ? accent : mutedColor),
-                            const SizedBox(height: 6),
-                            Text(sound.label, style: TextStyle(fontSize: 8, color: isSelected ? accent : mutedColor), textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

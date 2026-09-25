@@ -4,6 +4,7 @@ import '../../profile/presentation/profile_screen.dart' show LevelTier;
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
+import '../../../shared/widgets/hint_bubble.dart';
 import '../../../core/models/quest.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../../core/utils/leveling.dart';
@@ -34,8 +35,7 @@ int _totalXp(WidgetRef ref) =>
     super.dispose();
   }
 
-  
-    List<Quest> _questsForCurrentTab() {
+  List<Quest> _questsForCurrentTab() {
     final allQuests = ref.watch(questProvider);
     final period = switch (_tabController.index) {
       0 => QuestPeriod.daily,
@@ -364,7 +364,7 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                       final card = quest.progress != null
                           ? _GoalQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor)
                           : _SimpleQuestCard(quest: quest, cardColor: cardColor, accent: accent, mutedColor: mutedColor);
-                      return Dismissible(
+                      final dismissible = Dismissible(
                         key: ValueKey(quest.id),
                         direction: DismissDirection.endToStart,
                         confirmDismiss: (_) => _confirmDelete(quest),
@@ -383,6 +383,17 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                           child: card,
                         ),
                       );
+
+                      if (index == 0) {
+                        return HintBubble(
+                          hintId: 'swipe_delete_quests',
+                          message: 'Swipe a quest left to delete it',
+                          direction: AxisDirection.down,
+                          child: dismissible,
+                        );
+                      }
+
+                      return dismissible;
                     },
                   );
                 }),

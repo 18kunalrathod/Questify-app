@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/hint_bubble.dart';
 import 'models/note.dart';
 import 'note_editor_screen.dart';
 import 'note_provider.dart';
@@ -141,7 +142,7 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                           final note = filteredNotes[index];
                           final categoryColor = note.category.accentColor;
 
-                          return Dismissible(
+                          final card = Dismissible(
                             key: ValueKey(note.id),
                             direction: DismissDirection.endToStart,
                             confirmDismiss: (_) => _confirmDelete(note),
@@ -226,6 +227,17 @@ class _NotesTabState extends ConsumerState<NotesTab> {
                               ),
                             ),
                           );
+
+                          if (index == 0) {
+                            return HintBubble(
+                              hintId: 'swipe_delete_notes',
+                              message: 'Swipe a note left to delete it',
+                              direction: AxisDirection.down,
+                              child: card,
+                            );
+                          }
+
+                          return card;
                         },
                       ),
               ),
