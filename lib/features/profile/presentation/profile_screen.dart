@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/widgets/fade_through_route.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/quest.dart';
 import '../../../core/utils/attribute_scores.dart';
+import '../../../core/utils/user_display.dart';
 import '../../achievements/presentation/achievements_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../ledger/presentation/ledger_screen.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../../core/utils/leveling.dart';
 
@@ -56,6 +58,8 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
+    final user = Supabase.instance.client.auth.currentUser;
+    final displayName = displayNameFromEmail(user?.email);
     final allQuests = ref.watch(questProvider);
     final totalXp = allQuests.where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
     final currentLevel = Leveling.levelForXp(totalXp);
@@ -107,12 +111,12 @@ class ProfileScreen extends ConsumerWidget {
                             : null,
                       ),
                       alignment: Alignment.center,
-                      child: Text('K', style: AppTextStyles.headline(context, size: 24).copyWith(color: tier.color)),
+                      child: Text(displayName.isEmpty ? '?' : displayName[0], style: AppTextStyles.headline(context, size: 24).copyWith(color: tier.color)),
                     ),
                     const SizedBox(height: 12),
-                    AppTextStyles.nameHighlight(context, name: 'Kunal Rathod', size: 18),
+                    AppTextStyles.nameHighlight(context, name: displayName, size: 18),
                     const SizedBox(height: 3),
-                    Text('Joined 66 days ago', style: TextStyle(fontSize: 11, color: mutedColor)),
+                    Text(joinedLabel(user?.createdAt != null ? DateTime.tryParse(user!.createdAt) : null), style: TextStyle(fontSize: 11, color: mutedColor)),
                   ],
                 ),
               ),

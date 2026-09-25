@@ -78,7 +78,7 @@ class _QuestifyAppState extends ConsumerState<QuestifyApp> {
       navigatorKey.currentState?.push(
         MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
       );
-        } catch (e) {
+    } catch (e) {
       final context = navigatorKey.currentContext;
       if (context == null || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +97,6 @@ class _QuestifyAppState extends ConsumerState<QuestifyApp> {
   Widget build(BuildContext context) {
     final accent = ref.watch(accentColorProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final hasSession = Supabase.instance.client.auth.currentSession != null;
 
     return MaterialApp(
       navigatorKey: navigatorKey,
@@ -108,7 +107,13 @@ class _QuestifyAppState extends ConsumerState<QuestifyApp> {
       darkTheme: AppTheme.darkTheme(accent),
       localizationsDelegates: quill.FlutterQuillLocalizations.localizationsDelegates,
       supportedLocales: quill.FlutterQuillLocalizations.supportedLocales,
-      home: hasSession ? const AppShell() : const SplashScreen(),
+      home: StreamBuilder<AuthState>(
+        stream: Supabase.instance.client.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          final hasSession = Supabase.instance.client.auth.currentSession != null;
+          return hasSession ? const AppShell() : const SplashScreen();
+        },
+      ),
     );
   }
 }

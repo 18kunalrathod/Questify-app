@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../main.dart' show themeModeProvider;
+import '../../../main.dart' show themeModeProvider, navigatorKey;
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
+import '../../splash/presentation/screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -77,6 +78,10 @@ class SettingsScreen extends ConsumerWidget {
                       label: 'Sign out',
                       onTap: () async {
                         await Supabase.instance.client.auth.signOut();
+                        navigatorKey.currentState?.pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const SplashScreen()),
+                          (route) => false,
+                        );
                       },
                       isDestructive: true,
                       showDivider: false,
