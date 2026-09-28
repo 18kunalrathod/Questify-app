@@ -9,6 +9,7 @@ import '../../auth/reset_password_screen.dart';
 import '../../notes/presentation/note_provider.dart';
 import '../../splash/presentation/screen.dart';
 import 'accent_picker_row.dart';
+import 'data_export.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -64,7 +65,23 @@ class SettingsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    _NavRow(label: 'Export my data', onTap: () {}, showDivider: true),
+                    _NavRow(
+                      label: 'Export my data',
+                      onTap: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          await exportUserData(ref);
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text("Couldn't export your data. Please try again."),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      showDivider: true,
+                    ),
                     _NavRow(
                       label: 'Sync now',
                       onTap: () async {
