@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/quest.dart';
+import '../../../core/providers/quest_provider.dart';
+import '../../../core/utils/leveling.dart';
+import '../../../core/utils/quest_stats.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
 
@@ -41,26 +46,91 @@ class Achievement {
   });
 }
 
-const _achievements = [
-  Achievement(title: 'First Step', icon: AppIcon.quest, tier: AchievementTier.common, unlocked: true, unlockHint: 'Complete your first quest'),
-  Achievement(title: '7 Day Streak', icon: AppIcon.streak, tier: AchievementTier.common, unlocked: true, unlockHint: 'Maintain a 7-day streak'),
-  Achievement(title: 'Deep Focus', icon: AppIcon.focus, tier: AchievementTier.rare, unlocked: true, unlockHint: 'Complete 5 focus sessions'),
-  Achievement(title: '30 Day Streak', icon: AppIcon.streak, tier: AchievementTier.rare, unlockHint: 'Maintain a 30-day streak'),
-  Achievement(title: 'Knowledge Seeker', icon: AppIcon.document, tier: AchievementTier.rare, unlockHint: 'Complete 10 Knowledge quests'),
-  Achievement(title: 'Ship It', icon: AppIcon.quest, tier: AchievementTier.epic, unlocked: true, unlockHint: 'Ship a project or feature'),
-  Achievement(title: 'Quest Master', icon: AppIcon.checklist, tier: AchievementTier.epic, unlockHint: 'Complete 50 quests'),
-  Achievement(title: 'Legendary', icon: AppIcon.streak, tier: AchievementTier.epic, unlockHint: 'Reach the highest level'),
-];
+/// Builds the achievement list with real unlock state from the user's
+/// actual quest history, instead of a fixed set shown to everyone.
+List<Achievement> _buildAchievements(List<Quest> allQuests) {
+  final completed = allQuests.where((q) => q.completed).toList();
+  final totalCompleted = completed.length;
+  final streak = QuestStats.currentStreak(allQuests);
+  final totalXp = completed.fold<int>(0, (sum, q) => sum + q.xp);
+  final level = Leveling.levelForXp(totalXp);
 
-class AchievementsScreen extends StatelessWidget {
+  final focusCompleted = completed.where((q) => q.category == QuestCategory.focus).length;
+  final knowledgeCompleted = completed.where((q) => q.category == QuestCategory.knowledge).length;
+  final hasEpicComplete = completed.any((q) => q.rarity == QuestRarity.epic);
+
+  return [
+    Achievement(
+      title: 'First Step',
+      icon: AppIcon.quest,
+      tier: AchievementTier.common,
+      unlockHint: 'Complete your first quest',
+      unlocked: totalCompleted >= 1,
+    ),
+    Achievement(
+      title: '7 Day Streak',
+      icon: AppIcon.streak,
+      tier: AchievementTier.common,
+      unlockHint: 'Maintain a 7-day streak',
+      unlocked: streak >= 7,
+    ),
+    Achievement(
+      title: 'Deep Focus',
+      icon: AppIcon.focus,
+      tier: AchievementTier.rare,
+      unlockHint: 'Complete 5 Focus quests',
+      unlocked: focusCompleted >= 5,
+    ),
+    Achievement(
+      title: '30 Day Streak',
+      icon: AppIcon.streak,
+      tier: AchievementTier.rare,
+      unlockHint: 'Maintain a 30-day streak',
+      unlocked: streak >= 30,
+    ),
+    Achievement(
+      title: 'Knowledge Seeker',
+      icon: AppIcon.document,
+      tier: AchievementTier.rare,
+      unlockHint: 'Complete 10 Knowledge quests',
+      unlocked: knowledgeCompleted >= 10,
+    ),
+    Achievement(
+      title: 'Ship It',
+      icon: AppIcon.quest,
+      tier: AchievementTier.epic,
+      unlockHint: 'Complete an Epic quest',
+      unlocked: hasEpicComplete,
+    ),
+    Achievement(
+      title: 'Quest Master',
+      icon: AppIcon.checklist,
+      tier: AchievementTier.epic,
+      unlockHint: 'Complete 50 quests',
+      unlocked: totalCompleted >= 50,
+    ),
+    Achievement(
+      title: 'Legendary',
+      icon: AppIcon.streak,
+      tier: AchievementTier.epic,
+      unlockHint: 'Reach the highest level',
+      unlocked: level >= 31,
+    ),
+  ];
+}
+
+class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final accent = Theme.of(context).colorScheme.primary;
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
-    final unlockedCount = _achievements.where((a) => a.unlocked).length;
+
+    final allQuests = ref.watch(questProvider);
+    final achievements = _buildAchievements(allQuests);
+    final unlockedCount = achievements.where((a) => a.unlocked).length;
 
     return Scaffold(
       appBar: AppBar(title: Text('Achievements', style: AppTextStyles.headline(context, size: 18))),
@@ -73,14 +143,14 @@ class AchievementsScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('$unlockedCount of ${_achievements.length} unlocked', style: TextStyle(color: mutedColor, fontSize: 12)),
+                    Text('$unlockedCount of ${achievements.length} unlocked', style: TextStyle(color: mutedColor, fontSize: 12)),
                   ],
                 ),
               ),
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _achievements.length,
+                  itemCount: achievements.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     mainAxisSpacing: 16,
@@ -88,7 +158,7 @@ class AchievementsScreen extends StatelessWidget {
                     childAspectRatio: 0.75,
                   ),
                   itemBuilder: (context, index) {
-                    final achievement = _achievements[index];
+                    final achievement = achievements[index];
                     return _AchievementBadge(
                       achievement: achievement,
                       accent: accent,
