@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../shared/widgets/fade_through_route.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../core/theme/app_theme.dart';

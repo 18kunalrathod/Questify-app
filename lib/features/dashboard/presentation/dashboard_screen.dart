@@ -33,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     final cardColor = Theme.of(context).cardTheme.color;
 
     final user = Supabase.instance.client.auth.currentUser;
-    final greetingName = displayNameFromEmail(user?.email);
+    final greetingName = displayNameForUser(user, firstNameOnly: true);
 
     final allQuests = ref.watch(questProvider);
     final dayStart = QuestNotifier.currentQuestDayStart();

@@ -59,7 +59,7 @@ class ProfileScreen extends ConsumerWidget {
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
     final user = Supabase.instance.client.auth.currentUser;
-    final displayName = displayNameFromEmail(user?.email);
+    final displayName = displayNameForUser(user);
     final allQuests = ref.watch(questProvider);
     final totalXp = allQuests.where((q) => q.completed).fold<int>(0, (sum, q) => sum + q.xp);
     final currentLevel = Leveling.levelForXp(totalXp);

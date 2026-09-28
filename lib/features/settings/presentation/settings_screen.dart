@@ -5,6 +5,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../splash/presentation/screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/providers/quest_provider.dart';
+import '../../notes/presentation/note_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -61,7 +63,30 @@ class SettingsScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     _NavRow(label: 'Export my data', onTap: () {}, showDivider: true),
-                    _NavRow(label: 'Sync now', onTap: () {}, showDivider: false),
+                                        _NavRow(
+                      label: 'Sync now',
+                      onTap: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          await ref.read(questProvider.notifier).loadQuests();
+                          await ref.read(noteProvider.notifier).loadNotes();
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Up to date'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text("Couldn't sync. Check your connection and try again."),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      showDivider: false,
+                    ),
                   ],
                 ),
               ),
