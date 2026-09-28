@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/widgets/fade_through_route.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../core/theme/app_theme.dart';
@@ -20,9 +22,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isSubmitting = false;
+  bool _hasNavigated = false;
 
   late final AnimationController _rotateController;
   late final AnimationController _pulseController;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
@@ -36,15 +40,34 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 3500),
     )..repeat(reverse: true);
+
+    // Google sign-in finishes outside this screen (in the browser), so
+    // listen for the session appearing and move into the app when it does.
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn) {
+        _goToApp();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     _rotateController.dispose();
     _pulseController.dispose();
     super.dispose();
+  }
+
+  void _goToApp() {
+    if (!mounted || _hasNavigated) return;
+    // Don't navigate if another screen (e.g. reset password) is on top.
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    _hasNavigated = true;
+    Navigator.of(context).pushReplacement(
+      FadeThroughRoute(page: const AppShell()),
+    );
   }
 
   Future<void> _submitAuth() async {
@@ -71,16 +94,27 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         );
       }
 
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        FadeThroughRoute(page: const AppShell()),
-      );
+      _goToApp();
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
       _showError('Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'questify://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+    } on AuthException catch (e) {
+      _showError(e.message);
+    } catch (e) {
+      _showError('Something went wrong. Please try again.');
     }
   }
 
@@ -382,7 +416,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                 child: _AltAuthButton(
                                   leading: const Text('G', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
                                   label: 'Google',
-                                  onTap: () => _showError('Google sign-in coming soon.'),
+                                  onTap: _signInWithGoogle,
                                 ),
                               ),
                               const SizedBox(width: 10),
