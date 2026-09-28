@@ -7,6 +7,7 @@ import '../../splash/presentation/screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../notes/presentation/note_provider.dart';
+import '../../auth/reset_password_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -98,7 +99,15 @@ class SettingsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    _NavRow(label: 'Change password', onTap: () {}, showDivider: true),
+                                        _NavRow(
+                      label: 'Change password',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ResetPasswordScreen(isChangingPassword: true),
+                        ),
+                      ),
+                      showDivider: true,
+                    ),
                     _NavRow(
                       label: 'Sign out',
                       onTap: () async {

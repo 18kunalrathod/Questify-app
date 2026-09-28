@@ -5,7 +5,11 @@ import '../../shared/widgets/app_shell.dart';
 import '../../core/theme/app_theme.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  /// True when opened from Settings by a signed-in user, false when opened
+  /// from a password-reset email link.
+  final bool isChangingPassword;
+
+  const ResetPasswordScreen({super.key, this.isChangingPassword = false});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -51,10 +55,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        FadeThroughRoute(page: const AppShell()),
-        (route) => false,
-      );
+
+      if (widget.isChangingPassword) {
+        final messenger = ScaffoldMessenger.of(context);
+        Navigator.of(context).pop();
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Password updated'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          FadeThroughRoute(page: const AppShell()),
+          (route) => false,
+        );
+      }
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
@@ -75,10 +91,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final accent = Theme.of(context).colorScheme.primary;
     final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
     final cardColor = Theme.of(context).cardTheme.color;
+    final title = widget.isChangingPassword ? 'Change password' : 'Set new password';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Set new password', style: AppTextStyles.headline(context, size: 18)),
+        title: Text(title, style: AppTextStyles.headline(context, size: 18)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
