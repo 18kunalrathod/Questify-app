@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../main.dart' show themeModeProvider, navigatorKey;
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/ambient_glow_background.dart';
-import '../../splash/presentation/screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers/quest_provider.dart';
-import '../../notes/presentation/note_provider.dart';
+import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../auth/reset_password_screen.dart';
+import '../../notes/presentation/note_provider.dart';
+import '../../splash/presentation/screen.dart';
+import 'accent_picker_row.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -38,7 +39,7 @@ class SettingsScreen extends ConsumerWidget {
                       onChanged: (value) => ref.read(themeModeProvider.notifier).state = value ? ThemeMode.dark : ThemeMode.light,
                       showDivider: true,
                     ),
-                    _NavRow(label: 'Accent color', trailing: 'Gold', onTap: () {}, showDivider: false),
+                    const AccentPickerRow(),
                   ],
                 ),
               ),
@@ -64,7 +65,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     _NavRow(label: 'Export my data', onTap: () {}, showDivider: true),
-                                        _NavRow(
+                    _NavRow(
                       label: 'Sync now',
                       onTap: () async {
                         final messenger = ScaffoldMessenger.of(context);
@@ -99,7 +100,7 @@ class SettingsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                                        _NavRow(
+                    _NavRow(
                       label: 'Change password',
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
@@ -175,12 +176,11 @@ class _SwitchRow extends StatelessWidget {
 
 class _NavRow extends StatelessWidget {
   final String label;
-  final String? trailing;
   final VoidCallback onTap;
   final bool showDivider;
   final bool isDestructive;
 
-  const _NavRow({required this.label, this.trailing, required this.onTap, required this.showDivider, this.isDestructive = false});
+  const _NavRow({required this.label, required this.onTap, required this.showDivider, this.isDestructive = false});
 
   @override
   Widget build(BuildContext context) {
@@ -194,13 +194,7 @@ class _NavRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: TextStyle(fontSize: 13, color: isDestructive ? Colors.redAccent : null)),
-            Row(
-              children: [
-                if (trailing != null) Text(trailing!, style: TextStyle(fontSize: 12, color: mutedColor)),
-                const SizedBox(width: 4),
-                Icon(Icons.chevron_right, size: 16, color: mutedColor),
-              ],
-            ),
+            Icon(Icons.chevron_right, size: 16, color: mutedColor),
           ],
         ),
       ),

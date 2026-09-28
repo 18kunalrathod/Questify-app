@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/screen.dart';
 import 'features/auth/reset_password_screen.dart';
@@ -10,7 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'shared/widgets/app_shell.dart';
 
 /// Holds the currently selected accent color.
-/// Defaults to gold — our one locked accent for now.
+/// Defaults to gold until the user picks another one in Settings.
 final accentColorProvider = StateProvider<AccentColor>((ref) => AccentColor.gold);
 
 /// Holds the current theme mode (light/dark/system).
@@ -27,7 +28,23 @@ void main() async {
     url: 'https://lhahpoiiygszzqjsljlu.supabase.co',
     publishableKey: 'sb_publishable_6FgOUPg4AGKMUpPdVp0vBA_sX3G39Ms',
   );
-  runApp(const ProviderScope(child: QuestifyApp()));
+
+  // Restore the accent color the user picked last time, if any.
+  final prefs = await SharedPreferences.getInstance();
+  final savedAccent = prefs.getString('accent_color');
+  final initialAccent = AccentColor.values.firstWhere(
+    (a) => a.name == savedAccent,
+    orElse: () => AccentColor.gold,
+  );
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        accentColorProvider.overrideWith((ref) => initialAccent),
+      ],
+      child: const QuestifyApp(),
+    ),
+  );
 }
 
 class QuestifyApp extends ConsumerStatefulWidget {

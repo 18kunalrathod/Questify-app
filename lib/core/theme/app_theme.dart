@@ -18,7 +18,11 @@ class AppColors {
 }
 
 enum AccentColor {
-  gold(darkValue: Color(0xFFE8B84B), lightValue: Color(0xFFC8912E), label: 'Gold');
+  blossomPink(darkValue: Color(0xFFF7A6C8), lightValue: Color(0xFFD1588A), label: 'Blossom pink'),
+  gold(darkValue: Color(0xFFE8B84B), lightValue: Color(0xFFC8912E), label: 'Gold'),
+  teal(darkValue: Color(0xFF4FD1B5), lightValue: Color(0xFF0F8F7A), label: 'Teal'),
+  violet(darkValue: Color(0xFFA78BFA), lightValue: Color(0xFF7C5CE0), label: 'Violet'),
+  coral(darkValue: Color(0xFFFF8A6B), lightValue: Color(0xFFDB5A38), label: 'Coral');
 
   final Color darkValue;
   final Color lightValue;
@@ -44,15 +48,15 @@ class AppTheme {
         bodyColor: AppColors.darkTextPrimary,
         displayColor: AppColors.darkTextPrimary,
       ),
-cardTheme: CardThemeData(
-  color: AppColors.darkCard,
-  elevation: 0,
-  margin: EdgeInsets.zero,
-  shape: RoundedRectangleBorder(
-    borderRadius: const BorderRadius.all(Radius.circular(16)),
-    side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-  ),
-),
+      cardTheme: CardThemeData(
+        color: AppColors.darkCard,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+      ),
     );
   }
 
@@ -100,7 +104,7 @@ class AppTextStyles {
   }
 
   /// A headline where a [name]'s first letter is highlighted in the app's
-  /// accent color — e.g. "Good evening, Kunal" with the K in gold.
+  /// accent color — e.g. "Good evening, Kunal" with the K in the accent.
   /// [prefix] is any text before the name (can be empty), styled normally.
   static Widget nameHighlight(
     BuildContext context, {
