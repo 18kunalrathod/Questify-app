@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/quest.dart';
 import '../data/daily_quest_templates.dart';
+import '../services/notification_service.dart';
 
 class QuestNotifier extends StateNotifier<List<Quest>> {
   QuestNotifier() : super(const []) {
@@ -21,6 +22,10 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
       return todayReset.subtract(const Duration(days: 1));
     }
     return todayReset;
+  }
+
+  void _refreshReminders() {
+    NotificationService.instance.syncAll(state);
   }
 
   Future<void> loadQuests() async {
@@ -47,6 +52,7 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
         .toList();
 
     await _ensureTodaysDailyChallenges(user.id);
+    _refreshReminders();
   }
 
   Future<void> _ensureTodaysDailyChallenges(String userId) async {
@@ -107,6 +113,7 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
       for (final item in state)
         if (item.id == questId) updatedQuest else item,
     ];
+    _refreshReminders();
   }
 
   Future<void> addQuest({
@@ -145,6 +152,7 @@ class QuestNotifier extends StateNotifier<List<Quest>> {
   Future<void> deleteQuest(String questId) async {
     await _client.from('quests').delete().eq('id', questId);
     state = state.where((quest) => quest.id != questId).toList();
+    _refreshReminders();
   }
 
   List<Quest> forPeriod(QuestPeriod period) {

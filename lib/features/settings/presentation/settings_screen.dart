@@ -4,12 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../main.dart' show themeModeProvider, navigatorKey;
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/quest_provider.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../auth/reset_password_screen.dart';
 import '../../notes/presentation/note_provider.dart';
 import '../../splash/presentation/screen.dart';
 import 'accent_picker_row.dart';
 import 'data_export.dart';
+import 'notification_toggles.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -50,12 +52,7 @@ class SettingsScreen extends ConsumerWidget {
               Container(
                 decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    _SwitchRow(label: 'Daily quest reminders', value: true, onChanged: (_) {}, showDivider: true),
-                    _SwitchRow(label: 'Streak warnings', value: true, onChanged: (_) {}, showDivider: false),
-                  ],
-                ),
+                child: const NotificationToggles(),
               ),
 
               const SizedBox(height: 20),
@@ -129,6 +126,7 @@ class SettingsScreen extends ConsumerWidget {
                     _NavRow(
                       label: 'Sign out',
                       onTap: () async {
+                        await NotificationService.instance.resetForSignOut();
                         await Supabase.instance.client.auth.signOut();
                         navigatorKey.currentState?.pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const SplashScreen()),
