@@ -18,8 +18,8 @@ class AppColors {
 }
 
 enum AccentColor {
-  blossomPink(darkValue: Color(0xFFF7A6C8), lightValue: Color(0xFFD1588A), label: 'Blossom pink'),
   gold(darkValue: Color(0xFFE8B84B), lightValue: Color(0xFFC8912E), label: 'Gold'),
+  blossomPink(darkValue: Color(0xFFF7A6C8), lightValue: Color(0xFFD1588A), label: 'Blossom pink'),
   teal(darkValue: Color(0xFF4FD1B5), lightValue: Color(0xFF0F8F7A), label: 'Teal'),
   violet(darkValue: Color(0xFFA78BFA), lightValue: Color(0xFF7C5CE0), label: 'Violet'),
   coral(darkValue: Color(0xFFFF8A6B), lightValue: Color(0xFFDB5A38), label: 'Coral');
