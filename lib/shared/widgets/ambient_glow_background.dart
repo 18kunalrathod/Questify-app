@@ -15,6 +15,12 @@ class AmbientGlowBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
 
+    // Gold keeps its original warm orange glow; every other accent
+    // glows in its own color.
+    final isGold = accent == AccentColor.gold.darkValue ||
+        accent == AccentColor.gold.lightValue;
+    final glowCore = isGold ? AppColors.glowCore : accent;
+
     return Stack(
       children: [
         Positioned(
@@ -29,7 +35,7 @@ class AmbientGlowBackground extends StatelessWidget {
                   center: Alignment.center,
                   radius: 0.9,
                   colors: [
-                    AppColors.glowCore.withValues(alpha: strong ? 0.38 : 0.16),
+                    glowCore.withValues(alpha: strong ? 0.38 : 0.16),
                     accent.withValues(alpha: strong ? 0.15 : 0.06),
                     accent.withValues(alpha: 0.03),
                     Colors.transparent,
