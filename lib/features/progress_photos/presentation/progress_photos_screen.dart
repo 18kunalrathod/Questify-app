@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../shared/widgets/empty_state.dart';
 import 'progress_photo_provider.dart';
 import 'models/progress_photo.dart';
 
@@ -130,11 +131,11 @@ class _PhotosTabState extends ConsumerState<PhotosTab> {
     return Stack(
       children: [
         photos.isEmpty
-            ? const Center(
-                child: Text(
-                  'No progress photos yet.\nTap + to add your first one.',
-                  textAlign: TextAlign.center,
-                ),
+            ? const EmptyState(
+                icon: Icons.photo_camera_back_outlined,
+                title: 'No progress photos yet',
+                message:
+                    'Tap + to add a photo and see how you change over time.',
               )
             : GridView.builder(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),

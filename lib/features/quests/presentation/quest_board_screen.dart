@@ -4,6 +4,7 @@ import '../../profile/presentation/profile_screen.dart' show LevelTier;
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/app_icons.dart';
+import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/hint_bubble.dart';
 import '../../../core/models/quest.dart';
 import '../../../core/providers/quest_provider.dart';
@@ -353,7 +354,13 @@ Text('${ref.watch(questProvider).where((q) => q.completed).length} completed', s
                 child: Builder(builder: (context) {
                   final quests = _questsForCurrentTab();
                   if (quests.isEmpty) {
-                    return Center(child: Text('No quests here yet.', style: TextStyle(color: mutedColor, fontSize: 13)));
+                    return EmptyState(
+                      icon: Icons.flag_outlined,
+                      title: _selectedCategory == null ? 'No quests here yet' : 'No quests in this category',
+                      message: _selectedCategory == null
+                          ? 'Tap the + at the top right to add a quest. Daily quests reset every morning.'
+                          : 'Pick another category, or tap the + at the top right to add one.',
+                    );
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
