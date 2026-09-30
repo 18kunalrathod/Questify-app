@@ -5,15 +5,21 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers/quest_provider.dart';
 import '../../calendar/presentation/calendar_provider.dart';
+import '../../focus/presentation/focus_log_provider.dart';
 import '../../notes/presentation/note_provider.dart';
 
-/// Collects the user's quests, notes and calendar events into one JSON
-/// file and opens the system share sheet so they can save or send it.
+/// Collects the user's quests, notes, calendar events and focus logs into
+/// one JSON file and opens the system share sheet so they can save or send it.
 Future<void> exportUserData(WidgetRef ref) async {
   final user = Supabase.instance.client.auth.currentUser;
+
+  // Make sure the focus logs are loaded before reading them.
+  await ref.read(focusLogProvider.notifier).loadLogs();
+
   final quests = ref.read(questProvider);
   final notes = ref.read(noteProvider);
   final events = ref.read(calendarProvider);
+  final focusLogs = ref.read(focusLogProvider);
 
   final data = {
     'exported_at': DateTime.now().toIso8601String(),
@@ -47,6 +53,15 @@ Future<void> exportUserData(WidgetRef ref) async {
           'date': e.date.toIso8601String(),
           'time': e.time,
           'is_quest_deadline': e.isQuestDeadline,
+        },
+    ],
+    'focus_logs': [
+      for (final l in focusLogs)
+        {
+          'note': l.note,
+          'minutes': l.minutes,
+          'quest_title': l.questTitle,
+          'logged_at': l.loggedAt.toIso8601String(),
         },
     ],
   };

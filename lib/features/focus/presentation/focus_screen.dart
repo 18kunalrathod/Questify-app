@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../core/models/quest.dart';
+import '../../../core/providers/quest_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/ambient_glow_background.dart';
 import '../../../shared/widgets/hint_bubble.dart';
+import 'focus_log_screen.dart';
+import 'focus_log_sheet.dart';
 
 enum SessionType { focus, breakTime, rest }
 
@@ -26,14 +31,18 @@ const _focusPresets = [15, 25, 45, 60];
 const _breakPresets = [5, 10, 15];
 const _restPresets = [15, 30, 45];
 
-class FocusScreen extends StatefulWidget {
+/// Minimum time that must have elapsed before the checkmark can finish a
+/// session and tick off a quest. Lower it only for quick testing.
+const _minSessionSeconds = 60;
+
+class FocusScreen extends ConsumerStatefulWidget {
   const FocusScreen({super.key});
 
   @override
-  State<FocusScreen> createState() => _FocusScreenState();
+  ConsumerState<FocusScreen> createState() => _FocusScreenState();
 }
 
-class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin {
+class _FocusScreenState extends ConsumerState<FocusScreen> with TickerProviderStateMixin {
   int _focusMinutes = 25;
   int _breakMinutes = 5;
   int _restMinutes = 30;
@@ -61,6 +70,12 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
     _rotateController.dispose();
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  void _showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(text), behavior: SnackBarBehavior.floating),
+    );
   }
 
   Future<void> _startAmbientSound() async {
@@ -100,11 +115,10 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remaining.inSeconds <= 1) {
         timer.cancel();
-        _stopAmbientSound();
-        setState(() {
-          _isRunning = false;
-          _remaining = Duration.zero;
-        });
+        setState(() => _remaining = Duration.zero);
+        // The timer ran all the way down, so treat it exactly like tapping
+        // the checkmark.
+        _completeSession(elapsed: _totalDuration);
         return;
       }
       setState(() => _remaining -= const Duration(seconds: 1));
@@ -119,6 +133,211 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
       _totalDuration = Duration(minutes: _focusMinutes);
       _remaining = _totalDuration;
     });
+  }
+
+  /// Checkmark button: finish the session early.
+  void _finishSession() {
+    final elapsed = _totalDuration - _remaining;
+    if (elapsed.inSeconds < _minSessionSeconds) {
+      _showMessage('Focus for at least a minute before finishing a session.');
+      return;
+    }
+    _completeSession(elapsed: elapsed);
+  }
+
+  /// Ends the session, ticks off one of today's Focus quests when there is
+  /// one, and shows a result sheet with the XP earned.
+  Future<void> _completeSession({required Duration elapsed}) async {
+    final minutes = math.max(1, elapsed.inMinutes);
+
+    _countdownTimer?.cancel();
+    await _stopAmbientSound();
+    if (!mounted) return;
+    setState(() {
+      _isRunning = false;
+      _remaining = _totalDuration;
+    });
+
+    final dayStart = QuestNotifier.currentQuestDayStart();
+    final candidates = ref
+        .read(questProvider)
+        .where((q) =>
+            q.category == QuestCategory.focus &&
+            q.period == QuestPeriod.daily &&
+            !q.completed &&
+            q.createdAt != null &&
+            !q.createdAt!.isBefore(dayStart))
+        .toList();
+
+    var noXpReason = 'No Focus quest left today, so no XP this time.';
+    Quest? chosen;
+
+    if (candidates.length == 1) {
+      chosen = candidates.first;
+    } else if (candidates.length > 1) {
+      chosen = await _pickQuest(candidates);
+      if (!mounted) return;
+      if (chosen == null) {
+        noXpReason = 'No quest ticked off, so no XP this time.';
+      }
+    }
+
+    Quest? completed;
+    if (chosen != null) {
+      try {
+        await ref.read(questProvider.notifier).toggleComplete(chosen.id);
+        completed = chosen;
+      } catch (_) {
+        if (!mounted) return;
+        _showMessage("Couldn't update the quest. Please try again.");
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    await _showResultSheet(minutes: minutes, quest: completed, noXpReason: noXpReason);
+  }
+
+  Future<void> _showResultSheet({
+    required int minutes,
+    required Quest? quest,
+    required String noXpReason,
+  }) {
+    final accent = Theme.of(context).colorScheme.primary;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color;
+
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: 0.14)),
+                  child: Icon(Icons.check, color: accent, size: 24),
+                ),
+                const SizedBox(height: 12),
+                Text('Session complete', style: AppTextStyles.headline(context, size: 18)),
+                const SizedBox(height: 4),
+                Text('$minutes min focused', style: TextStyle(fontSize: 12, color: mutedColor)),
+                const SizedBox(height: 18),
+                if (quest != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: accent.withValues(alpha: 0.25)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '+${quest.xp} XP',
+                          style: AppTextStyles.stat(context, size: 34, weight: FontWeight.w700, color: accent),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          quest.title,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text('Focus quest completed', style: TextStyle(fontSize: 11, color: mutedColor)),
+                      ],
+                    ),
+                  )
+                else
+                  Text(
+                    noXpReason,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: mutedColor),
+                  ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(sheetContext).pop();
+                          showFocusLogSheet(context, ref, minutes: minutes, questTitle: quest?.title);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+                        ),
+                        child: const Text('Add note'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: accent,
+                          foregroundColor: Theme.of(context).scaffoldBackgroundColor,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+                        ),
+                        child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Quest?> _pickQuest(List<Quest> quests) {
+    final accent = Theme.of(context).colorScheme.primary;
+    return showModalBottomSheet<Quest>(
+      context: context,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Which Focus quest did you finish?', style: AppTextStyles.headline(context, size: 16)),
+                const SizedBox(height: 8),
+                ...quests.map(
+                  (q) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(q.title, style: const TextStyle(fontSize: 13)),
+                    trailing: Text('+${q.xp} XP', style: AppTextStyles.stat(context, size: 12, color: accent)),
+                    onTap: () => Navigator.of(sheetContext).pop(q),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Just end the session'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _cyclePreset(SessionType type) {
@@ -160,9 +379,32 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              Text('DEEP WORK SANCTUM', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1.5)),
-              const SizedBox(height: 4),
-              Text('Flutter deep work', style: AppTextStyles.headline(context, size: 20)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('DEEP WORK SANCTUM', style: TextStyle(color: mutedColor, fontSize: 10, letterSpacing: 1.5)),
+                        const SizedBox(height: 4),
+                        Text('Flutter deep work', style: AppTextStyles.headline(context, size: 20)),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const FocusLogScreen()),
+                    ),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: cardColor),
+                      child: Icon(Icons.edit_note_outlined, size: 20, color: accent),
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 32),
 
@@ -205,7 +447,7 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
                   const SizedBox(width: 18),
                   _CircleControlButton(icon: _isRunning ? Icons.pause : Icons.play_arrow, onTap: _toggleTimer, isPrimary: true, accent: accent),
                   const SizedBox(width: 18),
-                  _CircleControlButton(icon: Icons.check, onTap: () {}, cardColor: cardColor, mutedColor: mutedColor),
+                  _CircleControlButton(icon: Icons.check, onTap: _finishSession, cardColor: cardColor, mutedColor: mutedColor),
                 ],
               ),
 
