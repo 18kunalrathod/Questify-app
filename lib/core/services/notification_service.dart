@@ -47,7 +47,7 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation(info.identifier));
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_launcher_monochrome'),
       ),
     );
     _initialized = true;
